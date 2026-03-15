@@ -66,6 +66,30 @@ export async function POST(req: Request) {
             }
         });
 
+        // Generate simulated sensors and readings for each block so they appear on the dashboard
+        for (const block of farm.blocks) {
+            const sensor = await db.sensor.create({
+                data: {
+                    name: `${block.name} Virtual Sensor`,
+                    type: "virtual",
+                    blockId: block.id,
+                }
+            });
+
+            await db.sensorReading.create({
+                data: {
+                    sensorId: sensor.id,
+                    blockId: block.id,
+                    moisture: Math.floor(40 + Math.random() * 40),
+                    temp: Math.floor(20 + Math.random() * 15),
+                    humidity: Math.floor(50 + Math.random() * 30),
+                    nitrogen: Math.floor(20 + Math.random() * 20),
+                    phosphorus: Math.floor(20 + Math.random() * 20),
+                    potassium: Math.floor(20 + Math.random() * 20),
+                }
+            });
+        }
+
         return NextResponse.json({ farm });
     } catch (error) {
         console.error("Onboarding error:", error);

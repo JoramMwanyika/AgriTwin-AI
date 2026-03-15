@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Header } from "@/components/header";
 import { CloudRain, AlertTriangle, Calendar as CalendarIcon, Droplets, Leaf, Activity, Play, Mic, CheckCircle, TrendingUp, TrendingDown, Image as ImageIcon, MapPin, Thermometer, User, Lock } from "lucide-react";
 import { useChat } from "@/components/chat-provider";
@@ -9,6 +10,7 @@ import { speakText } from "@/lib/speech";
 import Image from "next/image";
 
 export default function Dashboard() {
+  const router = useRouter();
   const { toggleChat } = useChat();
   const [recommendations, setRecommendations] = useState<string[]>([]);
   const [isLoadingRecs, setIsLoadingRecs] = useState(true);
@@ -18,6 +20,12 @@ export default function Dashboard() {
       try {
         setIsLoadingRecs(true);
         const res = await fetch('/api/farm');
+
+        if (res.status === 404) {
+          router.push('/onboarding');
+          return;
+        }
+
         if (res.ok) {
           const data = await res.json();
           const recs: string[] = [];
