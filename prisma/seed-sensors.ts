@@ -54,19 +54,31 @@ async function main() {
         if (block.cropType?.toLowerCase().includes('rice')) { baseMoisture = 80; }
         if (block.cropType?.toLowerCase().includes('beans')) { baseMoisture = 45; }
 
-        // Add some random variance
-        const moisture = baseMoisture + (Math.random() * 10 - 5);
-        const temp = baseTemp + (Math.random() * 6 - 3);
+        const readingsToCreate = [];
+        const now = new Date();
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-        await prisma.sensorReading.create({
-            data: {
+        // Generate 48 readings for today (every 30 mins)
+        for (let i = 0; i < 48; i++) {
+            const time = new Date(startOfDay.getTime() + i * 30 * 60 * 1000);
+            
+            // Add some random variance that gently flows
+            const variance = Math.sin(i / 4) * 5; 
+            const moisture = baseMoisture + variance + (Math.random() * 4 - 2);
+            const temp = baseTemp + (variance * 0.5) + (Math.random() * 2 - 1);
+
+            readingsToCreate.push({
                 sensorId: moistureSensor.id,
                 blockId: block.id,
                 moisture: parseFloat(moisture.toFixed(1)),
-                temp: parseFloat(temp.toFixed(1)), // Storing temp in same reading for simplicity if schema allows w/ multiple optional fields
-                timestamp: new Date()
-            }
-        })
+                temp: parseFloat(temp.toFixed(1)),
+                timestamp: time
+            });
+        }
+
+        await prisma.sensorReading.createMany({
+            data: readingsToCreate
+        });
     }
 
     console.log("✅ Sensor data seeded successfully!")

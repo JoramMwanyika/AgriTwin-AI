@@ -12,17 +12,19 @@ model User {
   id                 String          @id @default(cuid())
   name               String?
   email              String?         @unique
-  emailVerified      DateTime?
-  image              String?
   password           String?
-  role               String          @default("farmer")
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
+  emailVerified      DateTime?
+  image              String?
   marketAccessExpiry DateTime?
+  role               String          @default("farmer")
+  Account            Account[]
   chatSessions       ChatSession[]
   farms              Farm[]
   listings           MarketListing[]
   payments           Payment[]
+  Session            Session[]
 }
 
 model Payment {
@@ -65,6 +67,7 @@ model Block {
   farm        Farm            @relation(fields: [farmId], references: [id], onDelete: Cascade)
   sensors     Sensor[]
   readings    SensorReading[]
+  recommendations DailyRecommendation[]
 }
 
 model Sensor {
@@ -80,18 +83,18 @@ model Sensor {
 
 model SensorReading {
   id         Int      @id @default(autoincrement())
-  sensorId   String
   blockId    String?
-  value      Float?
-  unit       String?
-  data       Json?
   moisture   Float?
   temp       Float?
+  data       Json?
   humidity   Float?
   nitrogen   Float?
   phosphorus Float?
   potassium  Float?
-  timestamp  DateTime @default(now())
+  sensorId   String
+  timestamp  DateTime @db.Timestamptz(6)
+  unit       String?
+  value      Float?
   block      Block?   @relation(fields: [blockId], references: [id])
   sensor     Sensor   @relation(fields: [sensorId], references: [id], onDelete: Cascade)
 }
@@ -131,4 +134,51 @@ model MarketListing {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   seller      User     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+}
+
+model DailyRecommendation {
+  id          String   @id @default(cuid())
+  blockId     String
+  date        DateTime @default(now()) 
+  type        String   @default("general") // e.g., 'irrigation', 'fertilizer', 'general'
+  content     String
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  block       Block    @relation(fields: [blockId], references: [id], onDelete: Cascade)
+}
+
+model Account {
+  id                String  @id
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  User              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }
