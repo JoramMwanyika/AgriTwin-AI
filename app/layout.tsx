@@ -1,22 +1,10 @@
 import type React from "react"
-import { DM_Sans, DM_Serif_Display } from "next/font/google"
 import "./globals.css"
 import { Toaster } from "@/components/ui/sonner"
 import { AuthProvider } from "@/components/auth-provider"
 import { ChatProvider } from "@/components/chat-provider"
 import { ChatBotWidget } from "@/components/chat-bot-widget"
-
-const dmSans = DM_Sans({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  weight: ["400", "500", "700"],
-})
-
-const dmSerif = DM_Serif_Display({
-  subsets: ["latin"],
-  variable: "--font-serif",
-  weight: ["400"],
-})
+import { CronPinger } from "@/components/cron-pinger"
 
 export default function RootLayout({
   children,
@@ -25,12 +13,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${dmSans.variable} ${dmSerif.variable}`}>
+      <body>
         <AuthProvider>
           <ChatProvider>
             {children}
             <ChatBotWidget />
             <Toaster />
+            <CronPinger />
           </ChatProvider>
         </AuthProvider>
       </body>

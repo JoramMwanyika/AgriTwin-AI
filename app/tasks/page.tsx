@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CheckCircle, Circle, Plus, AlertTriangle, UserPlus, Users, Calendar, MapPin, Send } from "lucide-react";
+import { CheckCircle, Circle, Plus, AlertTriangle, UserPlus, Users, Calendar, MapPin, Send, Trash2 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { AppPageHeader } from "@/components/app-page-header";
 import { toast } from "sonner";
@@ -23,7 +23,7 @@ export default function TasksPage() {
     // New Task Form
     const [newTask, setNewTask] = useState({ title: "", blockId: "", employeeId: "", dueDate: "" });
     // New Emp Form
-    const [newEmp, setNewEmp] = useState({ name: "", role: "Farm Hand", phoneNumber: "" });
+    const [newEmp, setNewEmp] = useState({ name: "", role: "Farm Hand", phoneNumber: "", email: "" });
 
     const fetchData = async () => {
         try {
@@ -82,7 +82,7 @@ export default function TasksPage() {
             if (res.ok) {
                 toast.success("Employee added successfully!");
                 setIsEmpModalOpen(false);
-                setNewEmp({ name: "", role: "Farm Hand", phoneNumber: "" });
+                setNewEmp({ name: "", role: "Farm Hand", phoneNumber: "", email: "" });
                 fetchData();
             }
         } catch (error) {
@@ -117,6 +117,37 @@ export default function TasksPage() {
             }
         } catch (error) {
             toast.error("Failed to create task");
+        }
+    };
+
+    const handleDeleteEmployee = async (id: string, name: string) => {
+        if (!confirm(`Are you sure you want to fire ${name}? They will be emailed a termination notice.`)) return;
+        
+        try {
+            const res = await fetch(`/api/employees?id=${id}`, { method: "DELETE" });
+            if (res.ok) {
+                toast.success(`${name} has been removed from the farm.`);
+                fetchData();
+            } else {
+                toast.error("Failed to delete employee");
+            }
+        } catch (error) {
+            toast.error("An error occurred");
+        }
+    };
+
+    const handleDeleteTask = async (e: React.MouseEvent, id: string) => {
+        e.stopPropagation(); // prevent toggling task completion
+        try {
+            const res = await fetch(`/api/tasks?id=${id}`, { method: "DELETE" });
+            if (res.ok) {
+                toast.success("Task deleted successfully!");
+                fetchData();
+            } else {
+                toast.error("Failed to delete task");
+            }
+        } catch (error) {
+            toast.error("An error occurred");
         }
     };
 
@@ -203,8 +234,8 @@ export default function TasksPage() {
                                             </Select>
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-sm font-bold text-slate-700">Due Date</label>
-                                            <Input type="date" value={newTask.dueDate} onChange={e => setNewTask({...newTask, dueDate: e.target.value})} className="rounded-xl border-slate-200" />
+                                            <label className="text-sm font-bold text-slate-700">Due Date & Time</label>
+                                            <Input type="datetime-local" value={newTask.dueDate} onChange={e => setNewTask({...newTask, dueDate: e.target.value})} className="rounded-xl border-slate-200" />
                                         </div>
                                         <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl py-6 font-bold mt-2">
                                             Dispatch & Notify
@@ -254,11 +285,18 @@ export default function TasksPage() {
                                                     )}
                                                     {task.dueDate && (
                                                         <span className="flex items-center bg-slate-100 text-slate-600 px-2 py-1 rounded-md">
-                                                            <Calendar className="h-3.5 w-3.5 mr-1" /> {new Date(task.dueDate).toLocaleDateString()}
+                                                            <Calendar className="h-3.5 w-3.5 mr-1" /> {new Date(task.dueDate).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
                                                         </span>
                                                     )}
                                                 </div>
                                             </div>
+                                            <button 
+                                                onClick={(e) => handleDeleteTask(e, task.id)}
+                                                className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                title="Delete Task"
+                                            >
+                                                <Trash2 className="w-5 h-5" />
+                                            </button>
                                         </li>
                                     );
                                 })}
@@ -309,6 +347,10 @@ export default function TasksPage() {
                                                 <label className="text-sm font-bold text-slate-700">Phone Number (For SMS)</label>
                                                 <Input required placeholder="+254..." value={newEmp.phoneNumber} onChange={e => setNewEmp({...newEmp, phoneNumber: e.target.value})} className="rounded-xl border-slate-200" />
                                             </div>
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-bold text-slate-700">Email Address</label>
+                                                <Input type="email" placeholder="employee@example.com" value={newEmp.email} onChange={e => setNewEmp({...newEmp, email: e.target.value})} className="rounded-xl border-slate-200" />
+                                            </div>
                                             <Button type="submit" className="w-full bg-slate-800 hover:bg-slate-900 text-white rounded-xl py-6 font-bold mt-2">
                                                 Save Employee
                                             </Button>
@@ -326,14 +368,21 @@ export default function TasksPage() {
                             ) : (
                                 <ul className="space-y-4">
                                     {employees.map(emp => (
-                                        <li key={emp.id} className="flex items-center gap-3">
+                                        <li key={emp.id} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-xl group transition-colors">
                                             <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold shrink-0">
                                                 {emp.name.charAt(0)}
                                             </div>
-                                            <div>
+                                            <div className="flex-1">
                                                 <p className="font-bold text-slate-800 text-sm leading-tight">{emp.name}</p>
                                                 <p className="text-slate-500 text-xs font-semibold">{emp.role}</p>
                                             </div>
+                                            <button 
+                                                onClick={() => handleDeleteEmployee(emp.id, emp.name)}
+                                                className="p-2 text-slate-300 opacity-0 group-hover:opacity-100 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                                title="Fire Employee"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
                                         </li>
                                     ))}
                                 </ul>
