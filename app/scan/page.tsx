@@ -1,14 +1,15 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Header } from "@/components/header";
+import { AppShell } from "@/components/app-shell";
+import { AppPageHeader } from "@/components/app-page-header";
 import { UploadCloud, Image as ImageIcon, CheckCircle, AlertTriangle, Search, X, Globe } from "lucide-react";
 import { useChat } from "@/components/chat-provider";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { LANGUAGES } from "@/components/chat-overlay";
+import { CHAT_LANGUAGES as LANGUAGES } from "@/lib/languages";
 import {
     Select,
     SelectContent,
@@ -104,7 +105,7 @@ export default function ScanPage() {
             const newHistoryItem = {
                 id: Date.now(),
                 plantType: data.analysis.plantType,
-                severity: data.analysis.severity.toLowerCase() === 'healthy' ? 'healthy' : (data.analysis.severity.toLowerCase() === 'warning' ? 'warning' : 'critical'),
+                severity: data.analysis?.severity?.toLowerCase() === 'healthy' ? 'healthy' : (data.analysis?.severity?.toLowerCase() === 'warning' ? 'warning' : 'critical'),
                 condition: data.analysis.condition,
                 date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
                 img: imagePreview || "/community-farm.jpeg",
@@ -120,22 +121,16 @@ export default function ScanPage() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans pb-24">
-            <Header />
+        <AppShell>
+            <div className="space-y-6">
+                <AppPageHeader subtitle="AI Crop Health Scan" />
 
-            <main className="container mx-auto px-4 max-w-7xl py-6 space-y-6">
-
-                <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-bold text-slate-800">AI Crop Health Scan</h2>
-                </div>
-
-                {/* Main Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
                     {/* Left Column: Upload & Results (Span 8) */}
                     <div className="lg:col-span-8 space-y-6">
 
-                        <div className="bg-white rounded-[20px] p-6 border border-slate-200 shadow-sm relative">
+                        <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm relative">
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="font-bold text-slate-800 text-lg">Upload an Image</h3>
                                 <Select value={language} onValueChange={setLanguage}>
@@ -188,7 +183,7 @@ export default function ScanPage() {
                                             <Button variant="outline" className="rounded-xl border-slate-200 text-slate-600" onClick={() => fileInputRef.current?.click()}>
                                                 Change Photo
                                             </Button>
-                                            <Button className="rounded-xl bg-green-500 hover:bg-green-600 text-white shadow-md shadow-green-500/20" onClick={analyzeImage}>
+                                            <Button className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-500/20" onClick={analyzeImage}>
                                                 Analyze Crop Health
                                             </Button>
                                         </div>
@@ -202,7 +197,7 @@ export default function ScanPage() {
                                     )}
 
                                     {analysisResult && (
-                                        <div className={`rounded-xl p-6 border shadow-sm ${analysisResult.severity.toLowerCase() === 'healthy' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                                        <div className={`rounded-xl p-6 border shadow-sm ${analysisResult?.severity?.toLowerCase() === 'healthy' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
                                             <h4 className="font-bold text-lg mb-4 text-slate-800">Scan Results</h4>
 
                                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
@@ -261,7 +256,7 @@ export default function ScanPage() {
                     {/* Right Column: Scan History (Span 4) */}
                     <div className="lg:col-span-4 space-y-6">
 
-                        <div className="bg-white rounded-[20px] p-6 border border-slate-200 shadow-sm">
+                        <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm">
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="font-bold text-slate-800 text-lg">Scan History</h3>
                                 <Search className="h-5 w-5 text-slate-400" />
@@ -322,7 +317,7 @@ export default function ScanPage() {
 
                     </div>
                 </div>
-            </main>
-        </div>
+            </div>
+        </AppShell>
     );
 }

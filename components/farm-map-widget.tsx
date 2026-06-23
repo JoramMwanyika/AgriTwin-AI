@@ -108,11 +108,11 @@ export function FarmMapWidget() {
                             },
                             structure: (function () {
                                 const combined = (b.name + " " + (b.cropType || "")).toLowerCase();
-                                if (combined.includes('house') || combined.includes('home') || combined.includes('villa')) return 'house';
-                                if (combined.includes('barn') || combined.includes('shed') || combined.includes('stable') || combined.includes('cow')) return 'barn';
                                 if (combined.includes('greenhouse') || combined.includes('nursery')) return 'greenhouse';
+                                if (combined.includes('barn') || combined.includes('shed') || combined.includes('stable') || combined.includes('cow')) return 'barn';
                                 if (combined.includes('water') || combined.includes('tank') || combined.includes('pump') || combined.includes('irrigation')) return 'irrigation';
                                 if (combined.includes('storage') || combined.includes('silo') || combined.includes('warehouse')) return 'storage';
+                                if (combined.includes('house') || combined.includes('home') || combined.includes('villa')) return 'house';
                                 return 'field';
                             })(),
                             sensorData: b.readings?.[0] ? {
@@ -139,9 +139,15 @@ export function FarmMapWidget() {
     };
 
     return (
-        <div className="bg-white rounded-[20px] p-6 border border-slate-200 shadow-sm relative">
-            <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-slate-800 text-lg">Your Farm Twin</h3>
+        <div className="bg-white rounded-2xl p-5 md:p-6 border border-slate-200/80 shadow-sm relative h-full">
+            <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
+                <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-slate-800 text-lg">Your Farm Twin</h3>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-red-600 bg-red-50 border border-red-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
+                        Live
+                    </span>
+                </div>
                 <div className="flex items-center bg-slate-100 p-1 rounded-lg">
                     <button
                         onClick={() => setIs3DView(false)}
@@ -158,7 +164,7 @@ export function FarmMapWidget() {
                 </div>
             </div>
 
-            <div className="relative w-full h-[400px] rounded-xl overflow-hidden bg-slate-50 border border-slate-200">
+            <div className="relative w-full h-[320px] md:h-[400px] rounded-xl overflow-hidden bg-gradient-to-b from-sky-50 to-emerald-50/30 border border-slate-200">
                 {is3DView ? (
                     <div className="w-full h-full">
                         <Farm3DView blocks={farmBlocks} onBlockClick={(b) => toast.info(`Selected: ${b.blockName}`)} />

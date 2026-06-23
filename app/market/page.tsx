@@ -2,37 +2,31 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { Lock, TrendingUp, TrendingDown, RefreshCcw, Store, ShoppingCart, MapPin, Tag, User } from "lucide-react";
+import { TrendingUp, TrendingDown, RefreshCcw, Store, ShoppingCart, MapPin, Tag, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PaymentModal } from "@/components/payment-modal";
 import { CreateListingModal } from "@/components/create-listing-modal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import Image from "next/image";
-import { Header } from "@/components/header";
+import { AppShell } from "@/components/app-shell";
+import { AppPageHeader } from "@/components/app-page-header";
 
-// Mock Market Data (Premium)
-const MARKET_DATA = [
-    { crop: "Maize (90kg)", price: 4500, change: +120, location: "Nairobi", trend: "up" },
-    { crop: "Beans (90kg)", price: 8200, change: -50, location: "Mombasa", trend: "down" },
-    { crop: "Potatoes (50kg)", price: 3500, change: +200, location: "Nakuru", trend: "up" },
-    { crop: "Tomatoes (crate)", price: 6000, change: +500, location: "Eldoret", trend: "up" },
-    { crop: "Onions (net)", price: 1200, change: -100, location: "Kisumu", trend: "down" },
-    { crop: "Avocado (kg)", price: 80, change: +5, location: "Meru", trend: "up" },
+// Initial Mock Market Data
+const INITIAL_MARKET_DATA = [
+    { id: 1, crop: "Maize (90kg)", price: 4500, change: +120, location: "Nairobi", trend: "up" },
+    { id: 2, crop: "Beans (90kg)", price: 8200, change: -50, location: "Mombasa", "trend": "down" },
+    { id: 3, crop: "Potatoes (50kg)", price: 3500, change: +200, location: "Nakuru", "trend": "up" },
+    { id: 4, crop: "Tomatoes (crate)", price: 6000, change: +500, location: "Eldoret", "trend": "up" },
+    { id: 5, crop: "Onions (net)", price: 1200, change: -100, location: "Kisumu", "trend": "down" },
+    { id: 6, crop: "Avocado (kg)", price: 80, change: +5, location: "Meru", "trend": "up" },
 ];
 
 export default function MarketPage() {
     const { data: session } = useSession();
-    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [isListingModalOpen, setIsListingModalOpen] = useState(false);
     const [listings, setListings] = useState<any[]>([]);
     const [loadingListings, setLoadingListings] = useState(false);
-
-    // Premium Access Check
-    const hasAccess = session?.user?.marketAccessExpiry
-        ? new Date(session.user.marketAccessExpiry) > new Date()
-        : false;
-
+    const [marketData, setMarketData] = useState<any[]>(INITIAL_MARKET_DATA);
     const fetchListings = async () => {
         setLoadingListings(true);
         try {
@@ -50,30 +44,46 @@ export default function MarketPage() {
 
     useEffect(() => {
         fetchListings();
+        
+        // Initialize WebSocket connection
+        const ws = new WebSocket("ws://localhost:8000/ws/market");
+        
+        ws.onopen = () => {
+            console.log("Connected to Market WebSocket");
+        };
+        
+        ws.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                setMarketData(data);
+            } catch (err) {
+                console.error("Failed to parse WebSocket market data", err);
+            }
+        };
+        
+        ws.onerror = (error) => {
+            console.error("WebSocket error", error);
+        };
+        
+        ws.onclose = () => {
+            console.log("Disconnected from Market WebSocket");
+        };
+        
+        return () => {
+            ws.close();
+        };
     }, []);
 
-    const handleUnlockSuccess = () => {
-        toast.success("Payment initiated! Access will be granted shortly.");
-        setTimeout(() => window.location.reload(), 5000);
-    };
-
     return (
-        <div className="min-h-screen bg-slate-50 font-sans pb-24">
-            <Header />
-
-            <main className="container mx-auto px-4 max-w-7xl py-6 space-y-8">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 pb-4">
-                    <div>
-                        <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2">Marketplace</h1>
-                        <p className="text-slate-500 font-medium">Track prices & trade with other farmers.</p>
-                    </div>
-                </div>
+        <AppShell>
+            <div className="space-y-6">
+                <AppPageHeader subtitle="Track prices & trade with other farmers" />
 
                 <Tabs defaultValue="prices" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 bg-slate-200/50 p-1 rounded-xl">
+                    <TabsList className="grid w-full grid-cols-2 bg-white border border-slate-200 p-1 rounded-xl shadow-sm">
                         <TabsTrigger value="prices" className="data-[state=active]:bg-white data-[state=active]:text-slate-800 text-slate-500 rounded-lg py-2.5 font-bold shadow-sm transition-all">
                             <TrendingUp className="w-4 h-4 mr-2" />
-                            Market Prices (Premium)
+                            Market Prices
                         </TabsTrigger>
                         <TabsTrigger value="trading" className="data-[state=active]:bg-white data-[state=active]:text-slate-800 text-slate-500 rounded-lg py-2.5 font-bold shadow-sm transition-all">
                             <Store className="w-4 h-4 mr-2" />
@@ -84,27 +94,9 @@ export default function MarketPage() {
                     {/* === TAB 1: PREMIUM PRICES === */}
                     <TabsContent value="prices" className="space-y-6 mt-6">
                         <div className="relative">
-                            {!hasAccess && (
-                                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/70 backdrop-blur-md rounded-[20px] border border-slate-200 p-6 text-center shadow-sm">
-                                    <div className="bg-yellow-50 p-4 rounded-full mb-4 shadow-sm border border-yellow-100">
-                                        <Lock className="w-8 h-8 text-yellow-500" />
-                                    </div>
-                                    <h2 className="text-xl font-bold text-slate-800 mb-2">Unlock Premium Market Insights</h2>
-                                    <p className="text-slate-600 mb-6 max-w-sm font-medium">
-                                        Get real-time prices, trends, and forecasts to sell at the best time.
-                                    </p>
-                                    <button
-                                        onClick={() => setIsPaymentModalOpen(true)}
-                                        className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold px-8 py-4 rounded-xl shadow-md transition-all text-lg"
-                                    >
-                                        Unlock for KES 10
-                                    </button>
-                                </div>
-                            )}
-
-                            <div className={`grid gap-6 md:grid-cols-2 lg:grid-cols-3 ${!hasAccess ? 'filter blur-md select-none opacity-50' : ''}`}>
-                                {MARKET_DATA.map((item, i) => (
-                                    <div key={i} className="bg-white rounded-[20px] p-6 border border-slate-200 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+                            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                                {marketData.map((item, i) => (
+                                    <div key={item.id || i} className="bg-white rounded-[20px] p-6 border border-slate-200 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
                                         <div className="absolute top-0 right-0 p-4 opacity-5 text-slate-900 group-hover:opacity-10 transition-opacity">
                                             {item.trend === 'up' ? <TrendingUp size={64} /> : <TrendingDown size={64} />}
                                         </div>
@@ -140,7 +132,7 @@ export default function MarketPage() {
                                 <h3 className="text-slate-800 font-bold text-xl mb-1">Buy & Sell Produce</h3>
                                 <p className="text-slate-500 font-medium">Directly trade with other farmers.</p>
                             </div>
-                            <button onClick={() => setIsListingModalOpen(true)} className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-xl flex items-center shadow-md shadow-green-500/20 transition-all">
+                            <button onClick={() => setIsListingModalOpen(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-xl flex items-center shadow-md shadow-emerald-500/20 transition-all">
                                 <Store className="w-5 h-5 mr-2" />
                                 Sell Produce
                             </button>
@@ -233,20 +225,14 @@ export default function MarketPage() {
                     </TabsContent>
                 </Tabs>
 
-            </main>
+            </div>
 
-            <PaymentModal
-                isOpen={isPaymentModalOpen}
-                onClose={() => setIsPaymentModalOpen(false)}
-                amount={10}
-                onSuccess={handleUnlockSuccess}
-            />
 
             <CreateListingModal
                 isOpen={isListingModalOpen}
                 onClose={() => setIsListingModalOpen(false)}
                 onSuccess={fetchListings}
             />
-        </div>
+        </AppShell>
     );
 }

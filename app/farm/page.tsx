@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Header } from "@/components/header";
-import { BottomNav } from "@/components/bottom-nav";
+import { AppShell } from "@/components/app-shell";
+import { AppPageHeader } from "@/components/app-page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -81,37 +81,37 @@ const colorOptions = [
   {
     value: "primary",
     label: "Eco Green",
-    bgClass: "bg-[#14532d] text-[#c0ff01]",
-    borderClass: "border-[#14532d]",
-    indicatorClass: "bg-[#c0ff01]"
+    bgClass: "bg-[#14532d]/40 backdrop-blur-md text-[#4ade80]",
+    borderClass: "border-[#22c55e]/30",
+    indicatorClass: "bg-[#4ade80]"
   },
   {
     value: "yellow",
     label: "Golden Harvest",
-    bgClass: "bg-amber-100 text-amber-900",
-    borderClass: "border-amber-200",
-    indicatorClass: "bg-amber-500"
+    bgClass: "bg-amber-900/40 backdrop-blur-md text-amber-400",
+    borderClass: "border-amber-500/30",
+    indicatorClass: "bg-amber-400"
   },
   {
     value: "brown",
     label: "Rich Soil",
-    bgClass: "bg-[#3f2e18] text-[#f0efe9]", // Dark earthy brown
-    borderClass: "border-[#3f2e18]",
+    bgClass: "bg-[#3f2e18]/40 backdrop-blur-md text-[#d6cba8]",
+    borderClass: "border-[#854d0e]/30",
     indicatorClass: "bg-[#d6cba8]"
   },
   {
     value: "lightgreen",
     label: "Fresh Sprout",
-    bgClass: "bg-[#dcfce7] text-[#14532d]",
-    borderClass: "border-[#86efac]",
-    indicatorClass: "bg-[#22c55e]"
+    bgClass: "bg-[#064e3b]/40 backdrop-blur-md text-[#6ee7b7]",
+    borderClass: "border-[#10b981]/30",
+    indicatorClass: "bg-[#34d399]"
   },
   {
     value: "darkgreen",
     label: "Deep Forest",
-    bgClass: "bg-[#0a1f16] text-white",
-    borderClass: "border-[#0a1f16]",
-    indicatorClass: "bg-[#4ade80]"
+    bgClass: "bg-[#022c22]/60 backdrop-blur-md text-[#a7f3d0]",
+    borderClass: "border-[#047857]/30",
+    indicatorClass: "bg-[#10b981]"
   },
 ];
 
@@ -181,11 +181,11 @@ export default function FarmTwinPage() {
               },
               structure: (function () {
                 const combined = (b.name + " " + (b.cropType || "")).toLowerCase();
-                if (combined.includes('house') || combined.includes('home') || combined.includes('villa') || combined.includes('cottage') || combined.includes('office')) return 'house';
-                if (combined.includes('barn') || combined.includes('shed') || combined.includes('stable') || combined.includes('cow') || combined.includes('cattle') || combined.includes('livestock') || combined.includes('poultry') || combined.includes('chicken')) return 'barn';
                 if (combined.includes('greenhouse') || combined.includes('nursery') || combined.includes('tunnel')) return 'greenhouse';
+                if (combined.includes('barn') || combined.includes('shed') || combined.includes('stable') || combined.includes('cow') || combined.includes('cattle') || combined.includes('livestock') || combined.includes('poultry') || combined.includes('chicken')) return 'barn';
                 if (combined.includes('water') || combined.includes('tank') || combined.includes('pump') || combined.includes('well') || combined.includes('irrigation')) return 'irrigation';
                 if (combined.includes('storage') || combined.includes('silo') || combined.includes('warehouse') || combined.includes('garage') || combined.includes('store')) return 'storage';
+                if (combined.includes('house') || combined.includes('home') || combined.includes('villa') || combined.includes('cottage') || combined.includes('office')) return 'house';
                 return 'field';
               })(),
               sensorData: b.readings?.[0] ? {
@@ -201,7 +201,6 @@ export default function FarmTwinPage() {
       }
 
       // Load weather if location exists or default
-      // For now using the hardcoded one in original code, but could use farm.location
       loadWeather();
     } catch (error) {
       console.error("Failed to load farm:", error);
@@ -244,7 +243,7 @@ export default function FarmTwinPage() {
     setNewBlockName("");
     setNewBlockColor("primary");
     setAddBlockDialogOpen(false);
-    toast.success(`${newBlockName} added!`);
+    toast.success(`${newBlockName} deployed!`);
   };
 
   const handleUpdateBlock = () => {
@@ -255,120 +254,167 @@ export default function FarmTwinPage() {
       )
     );
     setEditingBlock(null);
-    toast.success("Block updated!");
+    toast.success("Zone reconfigured!");
   };
 
   const handleDeleteBlock = (id: number | string) => {
     setFarmBlocks(farmBlocks.filter((block) => block.id !== id));
-    toast.success("Block removed!");
+    toast.success("Zone removed!");
   };
 
   return (
-    <div className="min-h-screen bg-[#f0efe9] pb-24">
-      <Header title="My Farm" />
+    <AppShell footer={false}>
+      <div className="space-y-8 max-w-7xl mx-auto w-full">
+        <AppPageHeader subtitle="Manage zones, sensors, and your digital twin" />
 
-      <main className="container px-4 py-6 space-y-8 max-w-6xl mx-auto">
         {/* Hero Section */}
-        <section className="rounded-3xl bg-[#0a1f16] text-white p-6 shadow-2xl relative overflow-hidden">
+        <section className="rounded-2xl bg-white border border-slate-200/80 p-6 md:p-8 shadow-sm relative overflow-hidden group">
           {/* Background decoration */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-[#c0ff01]/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-emerald-100/60 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none" />
 
-          <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 w-fit">
-                <Sprout className="h-4 w-4 text-[#c0ff01]" />
-                <span className="text-xs font-semibold tracking-wide uppercase text-[#c0ff01]">Digital Twin Active</span>
-              </div>
-              <h2 className="text-4xl font-serif font-bold text-white leading-tight">
-                Farm Status: <span className="text-[#c0ff01]">Optimal</span>
-              </h2>
-              <p className="text-gray-400 max-w-2xl text-sm leading-relaxed">
-                Your digital farm twin is synced with live sensor data. AI analysis predicts a <span className="text-white font-medium">12% yield increase</span> this season based on current growth patterns.
-              </p>
+          <div className="relative z-10 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+            <div className="space-y-5">
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 backdrop-blur-md border border-white/10 w-fit shadow-inner"
+              >
+                <div className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#22c55e] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-[#22c55e]"></span>
+                </div>
+                <span className="text-xs font-bold tracking-widest uppercase text-slate-300">Twin Synced</span>
+              </motion.div>
+              
+              <motion.h2 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="text-4xl md:text-5xl font-serif font-medium text-white leading-tight"
+              >
+                Farm Status: <span className="text-[#22c55e]">Optimal</span>
+              </motion.h2>
+              
+              <motion.p 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-slate-400 max-w-2xl text-base leading-relaxed"
+              >
+                Your digital farm twin is fully synchronized with live IoT sensors. AI analysis predicts a <span className="text-white font-medium bg-white/10 px-2 py-0.5 rounded-md border border-white/5">12% yield increase</span> this season based on current growth velocity.
+              </motion.p>
             </div>
 
-            <div className="flex gap-3">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+              className="flex flex-wrap gap-4"
+            >
               <Button
                 onClick={() => setIs3DView(!is3DView)}
-                className={`transition-all bg-white/10 hover:bg-white/20 text-white border-none ${is3DView ? 'ring-2 ring-blue-400 bg-blue-500/20' : ''}`}
+                variant="outline"
+                className={`transition-all duration-300 rounded-full px-6 h-12 bg-[#0f172a]/50 backdrop-blur-md border-slate-600 text-slate-300 hover:text-white hover:bg-slate-700/80 hover:border-slate-500 ${is3DView ? 'ring-2 ring-blue-500/50 bg-blue-500/20 text-white border-blue-500/30' : ''}`}
               >
-                <span className="mr-2">Deployment</span>
-                {is3DView ? '2D View' : '3D Sim'}
+                <span className="mr-2 opacity-70">Deployment:</span>
+                <strong className="text-white">{is3DView ? '3D Render' : '2D Map'}</strong>
               </Button>
 
               <Button
                 onClick={() => setIsEditingLayout(!isEditingLayout)}
-                disabled={is3DView} // Disable editing in 3D mode for simplicity
-                className={`transition-all bg-white/10 hover:bg-white/20 text-white border-none ${isEditingLayout ? 'ring-2 ring-[#c0ff01] bg-[#c0ff01]/20' : ''}`}
+                disabled={is3DView}
+                variant="outline"
+                className={`transition-all duration-300 rounded-full px-6 h-12 bg-[#0f172a]/50 backdrop-blur-md border-slate-600 text-slate-300 hover:text-white hover:bg-slate-700/80 hover:border-slate-500 ${isEditingLayout ? 'ring-2 ring-[#22c55e]/50 bg-[#22c55e]/20 text-white border-[#22c55e]/50' : ''}`}
               >
                 <LayoutGrid className="h-4 w-4 mr-2" />
-                {isEditingLayout ? 'Done Editing' : 'Edit Layout'}
+                {isEditingLayout ? 'Lock Grid' : 'Edit Grid'}
               </Button>
-              <Button className="bg-[#c0ff01] hover:bg-[#b0ef00] text-[#0a1f16] font-bold shadow-lg shadow-[#c0ff01]/20">
-                <ArrowUpRight className="h-4 w-4 mr-2" />
-                Export Report
+
+              <Button className="rounded-full px-8 h-12 bg-[#22c55e] hover:bg-[#16a34a] text-white font-bold shadow-lg shadow-[#22c55e]/20 border-0 hover:scale-105 transition-all">
+                <ArrowUpRight className="h-5 w-5 mr-2" />
+                Generate Report
               </Button>
-            </div>
+            </motion.div>
           </div>
 
           {/* Quick Stats Row */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-8 border-t border-white/10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-10 pt-8 border-t border-slate-700/50">
             {[
-              { label: "Active Area", value: "18.4 ha", icon: LayoutGrid },
-              { label: "Avg Moisture", value: "44%", icon: Droplets },
-              { label: "Alerts", value: "0", icon: Wind },
-              { label: "Tasks Due", value: "7", icon: Calendar },
+              { label: "Active Area", value: "18.4 ha", icon: LayoutGrid, color: "text-blue-400", bg: "bg-blue-400/10" },
+              { label: "Avg Moisture", value: "44%", icon: Droplets, color: "text-cyan-400", bg: "bg-cyan-400/10" },
+              { label: "Active Alerts", value: "0", icon: Wind, color: "text-[#22c55e]", bg: "bg-[#22c55e]/10" },
+              { label: "Pending Tasks", value: "7", icon: Calendar, color: "text-amber-400", bg: "bg-amber-400/10" },
             ].map((stat, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center">
-                  <stat.icon className="h-5 w-5 text-gray-400" />
+              <motion.div 
+                key={i} 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 + i * 0.1 }}
+                className="flex items-center gap-4 group cursor-default"
+              >
+                <div className={`h-14 w-14 rounded-2xl ${stat.bg} flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-inner border border-white/5`}>
+                  <stat.icon className={`h-6 w-6 ${stat.color}`} />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider font-bold">{stat.label}</p>
-                  <p className="text-xl font-serif font-bold text-white">{stat.value}</p>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-1">{stat.label}</p>
+                  <p className="text-2xl font-serif font-bold text-white tracking-tight">{stat.value}</p>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </section>
 
         {/* Farm Map Visualization */}
         {is3DView ? (
-          <Farm3DView blocks={farmBlocks} onBlockClick={(b) => toast.info(`Selected: ${b.blockName}`)} />
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-3xl border border-slate-700/50 shadow-2xl overflow-hidden bg-[#1e293b]/50 backdrop-blur-md"
+          >
+             <Farm3DView blocks={farmBlocks} onBlockClick={(b) => toast.info(`Selected: ${b.blockName}`)} />
+          </motion.div>
         ) : (
-          <div className="relative w-full rounded-3xl border border-[#d1d5db] shadow-xl bg-white overflow-hidden">
-            {/* Map Header */}
-            <div className="absolute top-0 left-0 w-full p-4 flex justify-between items-start z-20 pointer-events-none">
-              <div className="flex flex-wrap gap-2 pointer-events-auto">
-                <div className="bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full shadow-sm border border-gray-200 text-xs font-bold text-gray-700 flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-[#14532d]" /> Crops
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="relative w-full rounded-3xl border border-slate-700/50 shadow-2xl bg-[#0a0f18] overflow-hidden group"
+          >
+            {/* Map Header Overlay */}
+            <div className="absolute top-0 left-0 w-full p-6 flex justify-between items-start z-20 pointer-events-none">
+              <div className="flex flex-wrap gap-3 pointer-events-auto">
+                <div className="bg-[#1e293b]/80 backdrop-blur-md px-4 py-2 rounded-full shadow-lg border border-slate-700/50 text-xs font-bold text-slate-300 flex items-center gap-2 transition-all hover:bg-[#1e293b]">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#22c55e] shadow-[0_0_8px_rgba(34,197,94,0.6)]" /> Crop Zones
                 </div>
-                <div className="bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full shadow-sm border border-gray-200 text-xs font-bold text-gray-700 flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-[#854d0e]" /> Structures
+                <div className="bg-[#1e293b]/80 backdrop-blur-md px-4 py-2 rounded-full shadow-lg border border-slate-700/50 text-xs font-bold text-slate-300 flex items-center gap-2 transition-all hover:bg-[#1e293b]">
+                  <div className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]" /> Infrastructure
                 </div>
               </div>
 
               {weather && (
-                <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl shadow-sm border border-gray-200 text-xs font-medium text-gray-700 flex items-center gap-3 pointer-events-auto">
-                  <div className="flex items-center gap-1.5">
-                    <Sun className="h-4 w-4 text-orange-500" />
-                    <span className="font-bold">{Math.round(weather.main.temp)}°C</span>
+                <div className="bg-[#1e293b]/80 backdrop-blur-md px-5 py-2.5 rounded-2xl shadow-lg border border-slate-700/50 text-sm font-medium text-slate-200 flex items-center gap-4 pointer-events-auto transition-transform hover:scale-105">
+                  <div className="flex items-center gap-2">
+                    <Sun className="h-5 w-5 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]" />
+                    <span className="font-bold text-white text-lg">{Math.round(weather.main.temp)}°</span>
                   </div>
-                  <div className="w-px h-4 bg-gray-300" />
-                  <div className="flex items-center gap-1.5">
-                    <Droplets className="h-4 w-4 text-blue-500" />
-                    <span>{weather.main.humidity}%</span>
+                  <div className="w-px h-6 bg-slate-600/50" />
+                  <div className="flex items-center gap-2">
+                    <Droplets className="h-5 w-5 text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.6)]" />
+                    <span className="font-bold text-white">{weather.main.humidity}%</span>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Isometric-ish Grid Container */}
-            <div className="relative z-10 p-8 pt-16 min-h-[500px] bg-[url('/bg_mesh.png')] bg-cover bg-center">
-              {/* Grid Background Pattern */}
-              <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#000_1px,transparent_1px),linear-gradient(to_bottom,#000_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+            {/* Grid Container */}
+            <div className="relative z-10 p-8 pt-24 pb-16 min-h-[600px]">
+              {/* Sleek Dark Grid Pattern */}
+              <div className="absolute inset-0 opacity-[0.1] bg-[linear-gradient(to_right,#64748b_1px,transparent_1px),linear-gradient(to_bottom,#64748b_1px,transparent_1px)] bg-[size:32px_32px]"></div>
+              
+              {/* Radial gradient to highlight the center */}
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-transparent via-[#0a0f18]/80 to-[#0a0f18] pointer-events-none"></div>
 
-              <div className="grid grid-cols-5 grid-rows-4 gap-4 max-w-4xl mx-auto aspect-[5/4]">
+              <div className="grid grid-cols-5 grid-rows-4 gap-6 max-w-5xl mx-auto aspect-[5/4] relative z-20">
                 <AnimatePresence>
                   {farmBlocks.map((block) => {
                     const colors = getColorClasses(block.color);
@@ -376,70 +422,79 @@ export default function FarmTwinPage() {
                     return (
                       <motion.div
                         layout
-                        initial={{ opacity: 0, scale: 0.9 }}
+                        initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
                         key={block.id}
-                        className={`${colors.bgClass} rounded-2xl border ${colors.borderClass} p-4 flex flex-col items-start justify-between relative group transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-copy shadow-md`}
+                        className={`${colors.bgClass} rounded-3xl border ${colors.borderClass} p-5 flex flex-col items-start justify-between relative group transition-all duration-400 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.6)] cursor-pointer overflow-hidden shadow-lg`}
                         style={{
                           gridRow: `${block.gridPosition.row} / span ${block.gridPosition.rowSpan}`,
                           gridColumn: `${block.gridPosition.col} / span ${block.gridPosition.colSpan}`,
                         }}
                         onClick={() => isEditingLayout && setEditingBlock({ ...block })}
                       >
+                        {/* Glow effect on hover */}
+                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-t from-white/10 to-transparent transition-opacity duration-300"></div>
+
                         {/* Status Indicator */}
-                        <div className="flex justify-between w-full items-start">
-                          <div className={`h-2 w-2 rounded-full ${colors.indicatorClass} animate-pulse`} />
+                        <div className="flex justify-between w-full items-start relative z-10">
+                          <div className={`h-2.5 w-2.5 rounded-full ${colors.indicatorClass} shadow-[0_0_10px_currentColor]`} />
                           {block.healthStatus === 'warning' && (
-                            <div className="bg-red-500 text-white text-[10px] px-1.5 rounded-full font-bold animate-pulse">!</div>
+                            <div className="bg-red-500/90 backdrop-blur-sm text-white text-[9px] px-2 py-0.5 rounded-full font-bold animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.6)] uppercase tracking-wider border border-red-400/50">Alert</div>
                           )}
                         </div>
 
-                        <div className="mt-auto">
-                          <div className="text-2xl mb-1">{icon}</div>
-                          <p className="font-serif font-bold text-lg leading-none">{block.cropName}</p>
-                          <p className="text-[10px] uppercase tracking-wider opacity-70 mt-1 font-medium">{block.blockName}</p>
+                        <div className="mt-auto relative z-10 w-full">
+                          <div className="text-4xl mb-3 filter drop-shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 origin-bottom-left">{icon}</div>
+                          <p className="font-serif font-bold text-xl leading-tight text-white mb-1 drop-shadow-md">{block.cropName}</p>
+                          <p className="text-[10px] uppercase tracking-widest opacity-80 font-medium truncate drop-shadow-sm">{block.blockName}</p>
                         </div>
 
                         {/* Interactive Overlay when NOT editing (Details) */}
                         {!isEditingLayout && (
-                          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm rounded-2xl p-4 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center text-white z-10">
-                            <p className="text-xs font-bold text-[#c0ff01] uppercase tracking-wider mb-2">Live Status</p>
+                          <div className="absolute inset-0 bg-[#0f172a]/95 backdrop-blur-xl rounded-3xl p-5 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-center text-white z-20 translate-y-4 group-hover:translate-y-0 border border-white/10">
+                            <p className="text-[10px] font-bold text-[#22c55e] uppercase tracking-widest mb-4 flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e] animate-pulse"></span>
+                              Live Telemetry
+                            </p>
                             {block.sensorData ? (
-                              <div className="space-y-2 text-xs">
-                                <div className="flex justify-between border-b border-white/20 pb-1">
-                                  <span className="text-gray-400">Moisture</span>
-                                  <span>{block.sensorData.soilMoisture}%</span>
+                              <div className="space-y-3 text-xs w-full">
+                                <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                                  <span className="text-slate-400 flex items-center gap-1.5"><Droplets className="w-3 h-3 text-cyan-400"/> Moisture</span>
+                                  <span className="font-bold text-slate-100 bg-white/5 px-2 py-0.5 rounded">{block.sensorData.soilMoisture}%</span>
                                 </div>
-                                <div className="flex justify-between border-b border-white/20 pb-1">
-                                  <span className="text-gray-400">Temp</span>
-                                  <span>{block.sensorData.temperature}°C</span>
+                                <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                                  <span className="text-slate-400 flex items-center gap-1.5"><Thermometer className="w-3 h-3 text-amber-400"/> Temp</span>
+                                  <span className="font-bold text-slate-100 bg-white/5 px-2 py-0.5 rounded">{block.sensorData.temperature}°C</span>
                                 </div>
                                 {block.predictedHarvest && (
-                                  <div className="pt-1">
-                                    <span className="text-gray-400 block mb-0.5">Harvest</span>
-                                    <span className="font-bold">{block.predictedHarvest.toLocaleDateString()}</span>
+                                  <div className="pt-1 flex justify-between items-center">
+                                    <span className="text-slate-400 block mb-0.5">Est. Harvest</span>
+                                    <span className="font-bold text-white bg-white/5 px-2 py-0.5 rounded">{block.predictedHarvest.toLocaleDateString()}</span>
                                   </div>
                                 )}
                               </div>
                             ) : (
-                              <p className="text-xs text-gray-400">No sensor data connected.</p>
+                              <div className="flex-1 flex flex-col items-center justify-center text-center opacity-50">
+                                <Wind className="w-6 h-6 mb-2" />
+                                <p className="text-[10px] uppercase tracking-wider">Sensors Offline</p>
+                              </div>
                             )}
 
-                            <Button variant="outline" size="sm" className="w-full mt-3 h-7 text-xs bg-transparent border-white/30 text-white hover:bg-white hover:text-black">
-                              View Details
+                            <Button variant="outline" size="sm" className="w-full mt-5 h-8 text-xs bg-white/5 border-white/10 text-white hover:bg-white hover:text-[#0f172a] rounded-full transition-colors shadow-inner">
+                              Diagnostics
                             </Button>
                           </div>
                         )}
 
                         {/* Editing Overlay */}
                         {isEditingLayout && (
-                          <div className="absolute inset-0 bg-white/90 backdrop-blur-sm rounded-2xl flex items-center justify-center gap-2 z-20">
-                            <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-black/5 rounded-full" onClick={(e) => { e.stopPropagation(); setEditingBlock(block); }}>
-                              <Pencil className="h-4 w-4 text-gray-600" />
+                          <div className="absolute inset-0 bg-[#0f172a]/80 backdrop-blur-md rounded-3xl flex items-center justify-center gap-3 z-30 border-2 border-dashed border-[#22c55e]/60">
+                            <Button size="icon" variant="secondary" className="h-10 w-10 rounded-full bg-white text-black hover:scale-110 transition-transform shadow-lg" onClick={(e) => { e.stopPropagation(); setEditingBlock(block); }}>
+                              <Pencil className="h-4 w-4" />
                             </Button>
-                            <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-red-50 rounded-full" onClick={(e) => { e.stopPropagation(); handleDeleteBlock(block.id); }}>
-                              <Trash2 className="h-4 w-4 text-red-500" />
+                            <Button size="icon" variant="destructive" className="h-10 w-10 rounded-full hover:scale-110 transition-transform shadow-lg" onClick={(e) => { e.stopPropagation(); handleDeleteBlock(block.id); }}>
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
                         )}
@@ -455,99 +510,105 @@ export default function FarmTwinPage() {
                       <motion.button
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center hover:border-[#c0ff01] hover:bg-[#c0ff01]/5 transition-all group col-span-1 row-span-1"
+                        className="border-2 border-dashed border-slate-600 rounded-3xl flex flex-col items-center justify-center hover:border-[#22c55e] hover:bg-[#22c55e]/10 transition-all group col-span-1 row-span-1 min-h-[140px] bg-[#1e293b]/30 backdrop-blur-sm"
                       >
-                        <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-[#c0ff01] transition-colors">
-                          <Plus className="h-5 w-5 text-gray-400 group-hover:text-[#0a1f16]" />
+                        <div className="h-12 w-12 rounded-full bg-slate-800 flex items-center justify-center group-hover:bg-[#22c55e] transition-colors shadow-lg border border-slate-700 group-hover:border-[#22c55e]">
+                          <Plus className="h-6 w-6 text-slate-400 group-hover:text-white" />
                         </div>
-                        <span className="text-xs font-bold text-gray-400 mt-2 group-hover:text-[#0a1f16]">Add Block</span>
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-3 group-hover:text-[#22c55e] transition-colors">Add Zone</span>
                       </motion.button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-md">
+                    <DialogContent className="max-w-md bg-[#1e293b] border-slate-700 text-white shadow-2xl">
                       <DialogHeader>
-                        <DialogTitle className="font-serif text-2xl">Add New Farm Block</DialogTitle>
+                        <DialogTitle className="font-serif text-2xl">Initialize New Zone</DialogTitle>
                       </DialogHeader>
-                      <div className="grid gap-4 py-4">
+                      <div className="grid gap-5 py-4">
                         <div className="grid gap-2">
-                          <Label>Block Name</Label>
-                          <Input value={newBlockName} onChange={(e) => setNewBlockName(e.target.value)} placeholder="e.g. North Field" />
+                          <Label className="text-slate-300">Zone Identifier</Label>
+                          <Input value={newBlockName} onChange={(e) => setNewBlockName(e.target.value)} placeholder="e.g. Alpha Quadrant" className="bg-[#0f172a] border-slate-600 focus-visible:ring-[#22c55e]" />
                         </div>
                         <div className="grid gap-2">
-                          <Label>Crop/Structure</Label>
-                          <Input value={newCropName} onChange={(e) => setNewCropName(e.target.value)} placeholder="e.g. Maize" />
+                          <Label className="text-slate-300">Asset Type / Crop</Label>
+                          <Input value={newCropName} onChange={(e) => setNewCropName(e.target.value)} placeholder="e.g. Hydroponic Tomatoes" className="bg-[#0f172a] border-slate-600 focus-visible:ring-[#22c55e]" />
                         </div>
                         <div className="grid gap-2">
-                          <Label>Theme Color</Label>
+                          <Label className="text-slate-300">Telemetry Theme</Label>
                           <Select value={newBlockColor} onValueChange={setNewBlockColor}>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>
+                            <SelectTrigger className="bg-[#0f172a] border-slate-600 text-white focus:ring-[#22c55e]"><SelectValue /></SelectTrigger>
+                            <SelectContent className="bg-[#1e293b] border-slate-700 text-white">
                               {colorOptions.map((c) => (
-                                <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                                <SelectItem key={c.value} value={c.value} className="focus:bg-slate-700 focus:text-white cursor-pointer">{c.label}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
                         </div>
                       </div>
                       <DialogFooter>
-                        <Button onClick={handleAddBlock} className="bg-green-700 hover:bg-green-800 text-white">Add Block</Button>
+                        <Button onClick={handleAddBlock} className="bg-[#22c55e] hover:bg-[#16a34a] text-white rounded-full px-6 border-0 shadow-lg shadow-[#22c55e]/20">Deploy Zone</Button>
                       </DialogFooter>
                     </DialogContent>
                   </Dialog>
                 )}
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Helper text */}
-        <div className="text-center text-xs text-gray-500">
-          <p>Tip: Enable "<span className="font-semibold text-gray-700">Edit Layout</span>" to rearrange your digital twin to match your real farm.</p>
-        </div>
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="text-center text-xs text-slate-500 flex justify-center items-center gap-2 bg-[#1e293b]/30 w-fit mx-auto px-4 py-2 rounded-full border border-slate-800"
+        >
+          <div className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-pulse"></div>
+          <p>Tip: Enable "<span className="font-semibold text-slate-300">Edit Grid</span>" to configure your digital twin topology.</p>
+        </motion.div>
 
         {/* Edit Block Dialog */}
         <Dialog open={!!editingBlock} onOpenChange={(open) => !open && setEditingBlock(null)}>
-          <DialogContent>
+          <DialogContent className="bg-[#1e293b] border-slate-700 text-white shadow-2xl">
             <DialogHeader>
-              <DialogTitle className="font-serif text-2xl">Edit Block Details</DialogTitle>
+              <DialogTitle className="font-serif text-2xl">Reconfigure Zone</DialogTitle>
             </DialogHeader>
             {editingBlock && (
-              <div className="grid gap-4 py-4">
+              <div className="grid gap-5 py-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Row</Label>
-                    <Input type="number" value={editingBlock.gridPosition.row} onChange={(e) => setEditingBlock({ ...editingBlock, gridPosition: { ...editingBlock.gridPosition, row: parseInt(e.target.value) } })} />
+                    <Label className="text-slate-300">X Coordinate</Label>
+                    <Input type="number" value={editingBlock.gridPosition.col} onChange={(e) => setEditingBlock({ ...editingBlock, gridPosition: { ...editingBlock.gridPosition, col: parseInt(e.target.value) } })} className="bg-[#0f172a] border-slate-600 focus-visible:ring-[#22c55e]" />
                   </div>
                   <div className="space-y-2">
-                    <Label>Col</Label>
-                    <Input type="number" value={editingBlock.gridPosition.col} onChange={(e) => setEditingBlock({ ...editingBlock, gridPosition: { ...editingBlock.gridPosition, col: parseInt(e.target.value) } })} />
+                    <Label className="text-slate-300">Y Coordinate</Label>
+                    <Input type="number" value={editingBlock.gridPosition.row} onChange={(e) => setEditingBlock({ ...editingBlock, gridPosition: { ...editingBlock.gridPosition, row: parseInt(e.target.value) } })} className="bg-[#0f172a] border-slate-600 focus-visible:ring-[#22c55e]" />
                   </div>
                   <div className="space-y-2">
-                    <Label>Row Span</Label>
-                    <Input type="number" value={editingBlock.gridPosition.rowSpan} onChange={(e) => setEditingBlock({ ...editingBlock, gridPosition: { ...editingBlock.gridPosition, rowSpan: parseInt(e.target.value) } })} />
+                    <Label className="text-slate-300">Width (Span)</Label>
+                    <Input type="number" value={editingBlock.gridPosition.colSpan} onChange={(e) => setEditingBlock({ ...editingBlock, gridPosition: { ...editingBlock.gridPosition, colSpan: parseInt(e.target.value) } })} className="bg-[#0f172a] border-slate-600 focus-visible:ring-[#22c55e]" />
                   </div>
                   <div className="space-y-2">
-                    <Label>Col Span</Label>
-                    <Input type="number" value={editingBlock.gridPosition.colSpan} onChange={(e) => setEditingBlock({ ...editingBlock, gridPosition: { ...editingBlock.gridPosition, colSpan: parseInt(e.target.value) } })} />
+                    <Label className="text-slate-300">Height (Span)</Label>
+                    <Input type="number" value={editingBlock.gridPosition.rowSpan} onChange={(e) => setEditingBlock({ ...editingBlock, gridPosition: { ...editingBlock.gridPosition, rowSpan: parseInt(e.target.value) } })} className="bg-[#0f172a] border-slate-600 focus-visible:ring-[#22c55e]" />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Crop Name</Label>
-                  <Input value={editingBlock.cropName} onChange={(e) => setEditingBlock({ ...editingBlock, cropName: e.target.value })} />
+                  <Label className="text-slate-300">Asset Name</Label>
+                  <Input value={editingBlock.cropName} onChange={(e) => setEditingBlock({ ...editingBlock, cropName: e.target.value })} className="bg-[#0f172a] border-slate-600 focus-visible:ring-[#22c55e]" />
                 </div>
                 <div className="space-y-2">
-                  <Label>Description</Label>
-                  <Textarea value={editingBlock.description || ''} onChange={(e) => setEditingBlock({ ...editingBlock, description: e.target.value })} placeholder="Add notes..." />
+                  <Label className="text-slate-300">Operational Notes</Label>
+                  <Textarea value={editingBlock.description || ''} onChange={(e) => setEditingBlock({ ...editingBlock, description: e.target.value })} placeholder="Add diagnostic notes..." className="bg-[#0f172a] border-slate-600 resize-none h-24 focus-visible:ring-[#22c55e]" />
                 </div>
               </div>
             )}
             <DialogFooter>
-              <Button onClick={handleUpdateBlock} className="bg-primary text-primary-foreground">Save Changes</Button>
+              <Button onClick={handleUpdateBlock} className="bg-[#22c55e] hover:bg-[#16a34a] text-white rounded-full px-6 border-0 shadow-lg shadow-[#22c55e]/20">Commit Changes</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
-        <BottomNav />
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }
+

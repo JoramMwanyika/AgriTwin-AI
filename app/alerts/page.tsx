@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { Header } from "@/components/header"
-import { BottomNav } from "@/components/bottom-nav"
+import { AppShell } from "@/components/app-shell"
+import { AppPageHeader } from "@/components/app-page-header"
 import { Card, CardContent } from "@/components/ui/card"
 import { Droplets, ThermometerSun, Bug, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -19,12 +19,11 @@ export default function AlertsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      <Header title="Alerts & Warnings" />
-
-      <main className="container px-4 py-6 space-y-6">
+    <AppShell>
+      <div className="space-y-6 max-w-3xl">
+        <AppPageHeader subtitle="Alerts & warnings" />
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-lg font-serif font-bold">Active Alerts ({alerts.length})</h2>
+          <h2 className="text-lg font-bold text-slate-800">Active Alerts ({alerts.length})</h2>
           <span className="text-xs text-muted-foreground">Updated 10m ago</span>
         </div>
 
@@ -121,8 +120,7 @@ export default function AlertsPage() {
             </CardContent>
           </Card>
         )}
-      </main>
-      <BottomNav />
-    </div>
+      </div>
+    </AppShell>
   )
 }

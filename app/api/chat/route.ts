@@ -1,37 +1,22 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
+import {
+  buildChatSystemPrompt,
+  getAzureTranslatorCode,
+  getLanguageName,
+  getLocalizedErrorMessage,
+  getOllamaModel,
+  normalizeLanguageCode,
+  shouldTranslateReplyWithAzure,
+} from "@/lib/languages"
+import { fetchOllama } from "@/lib/ollama"
+import { isAzureTranslatorConfigured, translateText } from "@/lib/azure-translate"
 
-const AZURE_ENDPOINT = process.env.AZURE_OPENAI_ENDPOINT!
-const AZURE_API_VERSION = process.env.AZURE_OPENAI_API_VERSION || "2025-01-01-preview"
-const AZURE_KEY = process.env.AZURE_OPENAI_KEY!
-
-const SYSTEM_PROMPT = `You are AgriTwin, a friendly and knowledgeable AI farming assistant for smallholder farmers in Kenya. 
-You provide advice on:
-- Crop management (planting, fertilizing, harvesting)
-- Pest and disease control
-- Weather-based recommendations
-- Soil health and irrigation
-- Market prices and best practices
-- Team task assignment and farm collaboration
-
-Keep responses concise, practical, and easy to understand. Use simple language suitable for farmers with varying literacy levels.
-When relevant, consider local conditions in Kenya (climate, common crops like maize, beans, tomatoes, etc.).
-Always be encouraging and supportive.
-
-You can understand and respond in Swahili (Kiswahili), Kikuyu (Gikuyu), and Luo (Dholuo) if the user speaks them.
-
-Please use natural punctuation to make the text easy to read and suitable for Text-to-Speech (TTS).
-
-If the user shares information about a plant disease or pest from an image analysis, provide detailed advice on:
-1. Confirmation of the disease/pest identification
-2. Immediate actions to take
-3. Treatment options (both organic and chemical)
-4. Prevention measures for the future
-
-If the user asks to assign tasks to team members (e.g., "Tell John to water the tomatoes"), acknowledge the request and let them know the task has been assigned. Be conversational and natural about task assignments.`
+const OLLAMA_URL = process.env.OLLAMA_URL || "http://localhost:11434/v1/chat/completions"
 
 export async function POST(req: NextRequest) {
+  let language = "en"
   try {
     const session = await auth()
 
@@ -39,141 +24,239 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { messages, imageAnalysis, language } = await req.json()
+    const body = await req.json()
+    const { messages, imageAnalysis, language: rawLanguage } = body
+    language = normalizeLanguageCode(rawLanguage)
     const userId = session.user.id
 
     // 1. Get or Create a generic Chat Session for this user (for now, single session per user or new one)
-    // Let's find the most recent active session or create one
-    let chatSession = await db.chatSession.findFirst({
-      where: { userId },
-      orderBy: { updatedAt: 'desc' }
-    })
-
-    if (!chatSession) {
-      chatSession = await db.chatSession.create({
-        data: {
-          userId,
-          title: "Farm Advisor Chat"
-        }
+    let chatSession = null;
+    try {
+      chatSession = await db.chatSession.findFirst({
+        where: { userId },
+        orderBy: { updatedAt: 'desc' }
       })
+
+      if (!chatSession) {
+        chatSession = await db.chatSession.create({
+          data: {
+            userId,
+            title: "Farm Advisor Chat"
+          }
+        })
+      }
+
+      // 2. Save User Message
+      const lastUserMessage = messages[messages.length - 1]
+      if (lastUserMessage.role === 'user') {
+        await db.chatMessage.create({
+          data: {
+            sessionId: chatSession.id,
+            role: 'user',
+            content: lastUserMessage.text || lastUserMessage.content, // Handle both formats if needed
+            language: language,
+            imageAnalysis: imageAnalysis ? JSON.parse(JSON.stringify(imageAnalysis)) : undefined
+          }
+        })
+      }
+    } catch (dbError) {
+      console.warn("Database is unreachable. Proceeding without saving user chat history.");
     }
 
-    // 2. Save User Message
-    const lastUserMessage = messages[messages.length - 1]
-    if (lastUserMessage.role === 'user') {
-      await db.chatMessage.create({
-        data: {
-          sessionId: chatSession.id,
-          role: 'user',
-          content: lastUserMessage.text || lastUserMessage.content, // Handle both formats if needed
-          language: language,
-          imageAnalysis: imageAnalysis ? JSON.parse(JSON.stringify(imageAnalysis)) : undefined
+    const languageName = getLanguageName(language)
+    // Disabled Azure translation: force the model to natively respond in the target language
+    const useAzureForReply = false
+    const modelName = getOllamaModel(language, { replyViaAzureTranslation: useAzureForReply })
+
+    // Fetch Farm Block Context
+    let blockContext = "No farm block data available.";
+    try {
+      const userFarms = await db.farm.findMany({
+        where: { userId },
+        include: {
+          blocks: {
+            include: {
+              readings: {
+                orderBy: { timestamp: 'desc' },
+                take: 1
+              }
+            }
+          }
         }
-      })
+      });
+      
+      if (userFarms.length > 0) {
+        const blocks = userFarms.flatMap(f => f.blocks);
+        if (blocks.length > 0) {
+          blockContext = blocks.map(b => {
+            const reading = b.readings?.[0];
+            const stats = reading ? `Moisture: ${reading.moisture}%, Temp: ${reading.temp}°C, NPK: ${reading.nitrogen}/${reading.phosphorus}/${reading.potassium}` : "No sensor data";
+            return `- ${b.name} (Crop: ${b.cropType || 'Unknown'}, Status: ${b.status}). Sensors: ${stats}`;
+          }).join("\n");
+        }
+      }
+    } catch (dbError) {
+      console.warn("Database unreachable. Using fallback block data for demo.");
+      blockContext = `- North Field (Crop: Maize, Status: active). Sensors: Moisture: 32%, Temp: 28°C, NPK: 40/30/20\n- Greenhouse 1 (Crop: Tomatoes, Status: active). Sensors: Moisture: 65%, Temp: 24°C, NPK: 50/40/30`;
     }
 
-    // Determine target language name
-    const languageNames: Record<string, string> = {
-      sw: "Swahili (Kiswahili)",
-      ki: "Kikuyu (Gikuyu)",
-      luo: "Luo (Dholuo)",
-      fr: "French",
-      af: "Afrikaans",
-      am: "Amharic",
-      ar: "Arabic",
-      ha: "Hausa",
-      ig: "Igbo",
-      rw: "Kinyarwanda",
-      ln: "Lingala",
-      lg: "Luganda",
-      rn: "Kirundi",
-      st: "Sesotho",
-      nso: "Northern Sotho",
-      tn: "Setswana",
-      so: "Somali",
-      ti: "Tigrinya",
-      xh: "Xhosa",
-      yo: "Yoruba",
-      zu: "Zulu",
-    }
+    const historyLimit = language === "en" ? 10 : 2
+    const recentMessages = (
+      messages as { role: string; text?: string; content?: string }[]
+    ).filter((m) => m.role === "user" || m.role === "ai" || m.role === "assistant").slice(-historyLimit)
 
-    const targetLanguage = languageNames[language] || "English"
-    const languageInstruction = language !== "en" ? `Reply in ${targetLanguage}.` : ""
-
-    // Build messages array
     const apiMessages = [
-      { role: "system", content: SYSTEM_PROMPT + (languageInstruction ? `\n\n${languageInstruction}` : "") },
-      ...messages.map((m: { role: string; text: string }) => ({
-        role: m.role === "ai" ? "assistant" : "user",
-        content: m.text,
-      })),
+      {
+        role: "system",
+        content: buildChatSystemPrompt(blockContext, language, {
+          replyViaAzureTranslation: useAzureForReply,
+        }),
+      },
+      ...recentMessages.map((m, idx, arr) => {
+        const role = m.role === "ai" || m.role === "assistant" ? "assistant" : "user"
+        let content = m.text || m.content || ""
+        const isLastUser = role === "user" && idx === arr.length - 1
+        if (isLastUser && language !== "en" && !useAzureForReply) {
+          content = `${content}\n\n[Respond only in ${languageName}; code ${language}]`
+        }
+        return { role, content }
+      }),
     ]
 
-    // If there's image analysis, add it to the last user message
-    if (imageAnalysis) {
-      const lastUserIdx = apiMessages.length - 1
+    const lastUserIdx = apiMessages.length - 1
+    if (lastUserIdx >= 0 && apiMessages[lastUserIdx].role === "user" && imageAnalysis) {
+      const userContent = apiMessages[lastUserIdx].content
       apiMessages[lastUserIdx].content =
-        `[Image Analysis Results: ${imageAnalysis}]\n\nUser question: ${apiMessages[lastUserIdx].content}`
+        `[Image Analysis Results: ${imageAnalysis}]\n\nUser question: ${userContent}`
     }
 
-    const endpointUrl = new URL(AZURE_ENDPOINT)
-    endpointUrl.searchParams.set("api-version", AZURE_API_VERSION)
-    const url = endpointUrl.toString()
+    let aiMessageContent = "";
+    let azureSuccess = false;
 
-    console.log("[v0] Calling Azure API at:", url)
+    const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+    const GITHUB_MODEL = process.env.GITHUB_MODEL || "gpt-4o";
+    let GITHUB_ENDPOINT = process.env.GITHUB_MODELS_ENDPOINT || "https://models.inference.ai.azure.com/chat/completions";
+    if (!GITHUB_ENDPOINT.endsWith("/chat/completions")) {
+      GITHUB_ENDPOINT = `${GITHUB_ENDPOINT.replace(/\/$/, "")}/chat/completions`;
+    }
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": AZURE_KEY,
-      },
-      body: JSON.stringify({
-        messages: apiMessages,
-        max_tokens: 800,
-        temperature: 0.7,
-      }),
-    })
+    if (GITHUB_TOKEN) {
+      try {
+        console.log(`[v0] Trying GitHub Models Chat with ${GITHUB_MODEL}...`);
+        
+        const azureResponse = await fetch(GITHUB_ENDPOINT, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${GITHUB_TOKEN}`,
+          },
+          body: JSON.stringify({
+            model: GITHUB_MODEL,
+            messages: apiMessages,
+            temperature: language === "en" ? 0.5 : 0.35,
+            max_tokens: 1500,
+          }),
+        });
 
-    const responseText = await response.text()
-    // console.log("[v0] Azure API Response Status:", response.status)
+        if (azureResponse.ok) {
+          const azureData = await azureResponse.json();
+          aiMessageContent = azureData.choices?.[0]?.message?.content || "";
+          if (aiMessageContent) {
+            azureSuccess = true;
+            console.log("[v0] GitHub Models Success");
+          }
+        } else {
+          console.warn("[v0] GitHub Models Failed with status:", azureResponse.status, await azureResponse.text());
+        }
+      } catch (err) {
+        console.warn("[v0] GitHub Models Request Error:", err);
+      }
+    }
 
-    if (!response.ok) {
-      console.error("[v0] Azure GPT Error:", response.status, responseText)
-      return NextResponse.json(
-        {
-          error: "Failed to get AI response",
-          message: "I apologize, I'm having trouble connecting right now. Please try again in a moment.",
-        },
-        { status: 500 },
+    if (!azureSuccess) {
+      console.log(
+        "[v0] Falling back to Ollama:",
+        OLLAMA_URL,
+        "model:",
+        modelName,
+        "language:",
+        language,
+        "(",
+        languageName,
+        ")",
+        "azureTranslate:",
+        useAzureForReply,
       )
-    }
 
-    let data
-    try {
-      data = JSON.parse(responseText)
-    } catch {
-      console.error("[v0] JSON Parse Error:", responseText)
-      return NextResponse.json(
-        {
-          error: "Invalid response format",
-          message: "I received an unexpected response. Please try again.",
+      const ollamaResponse = await fetchOllama(OLLAMA_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        { status: 500 },
-      )
+        body: JSON.stringify({
+          model: modelName,
+          messages: apiMessages,
+          temperature: language === "en" ? 0.5 : 0.35,
+          stream: false,
+          keep_alive: "10m",
+        }),
+      })
+
+      const responseText = await ollamaResponse.text()
+
+      if (!ollamaResponse.ok) {
+        console.error("[v0] Ollama Error:", ollamaResponse.status, responseText)
+        return NextResponse.json(
+          {
+            error: "Failed to get AI response",
+            message: getLocalizedErrorMessage(language, "connection"),
+          },
+          { status: 500 },
+        )
+      }
+
+      let data
+      try {
+        data = JSON.parse(responseText)
+      } catch {
+        console.error("[v0] JSON Parse Error:", responseText)
+        return NextResponse.json(
+          {
+            error: "Invalid response format",
+            message: getLocalizedErrorMessage(language, "invalid"),
+          },
+          { status: 500 },
+        )
+      }
+
+      aiMessageContent = data.choices?.[0]?.message?.content || data.message?.content || "I apologize, I could not process your request."
     }
 
-    const aiMessageContent = data.choices?.[0]?.message?.content || "I apologize, I could not process your request."
+    if (useAzureForReply) {
+      try {
+        const azureTarget = getAzureTranslatorCode(language)!
+        aiMessageContent = await translateText(aiMessageContent, "en", azureTarget)
+        console.log("[v0] Translated reply to", azureTarget)
+      } catch (translateErr) {
+        console.warn("[v0] Azure translation failed, using model output:", translateErr)
+      }
+    }
 
     // 3. Save AI Response
-    await db.chatMessage.create({
-      data: {
-        sessionId: chatSession.id,
-        role: 'assistant',
-        content: aiMessageContent,
-        language: language,
+    if (chatSession) {
+      try {
+        await db.chatMessage.create({
+          data: {
+            sessionId: chatSession.id,
+            role: 'assistant',
+            content: aiMessageContent,
+            language: language,
+          }
+        })
+      } catch (dbError) {
+        console.warn("Database is unreachable. Could not save AI response.");
       }
-    })
+    }
 
     return NextResponse.json({ message: aiMessageContent })
   } catch (error) {
@@ -181,7 +264,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         error: "Internal server error",
-        message: "Something went wrong. Please try again later.",
+        message: getLocalizedErrorMessage(language, "generic"),
       },
       { status: 500 },
     )

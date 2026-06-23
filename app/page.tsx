@@ -1,370 +1,441 @@
-"use client";
+"use client"
 
-import { useScroll, useTransform, motion, useSpring, useInView } from "framer-motion";
-import { useRef, useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Leaf, ArrowRight, Cloud, MessageSquare, Shield, Globe, Users, Menu, X, Mail, Phone, MapPin, Linkedin, Twitter, Instagram } from "lucide-react";
-import Link from "next/link";
-import Image from "next/image";
-import { cn } from "@/lib/utils";
+import { useRef, useState } from "react"
+import { motion, useInView } from "framer-motion"
+import Image from "next/image"
+import Link from "next/link"
+import {
+  Leaf,
+  ArrowRight,
+  Play,
+  Menu,
+  X,
+  Globe,
+  Brain,
+  Layers,
+  Wifi,
+  BarChart3,
+  Sprout,
+  Building2,
+  Quote,
+  Send,
+  Linkedin,
+  Twitter,
+  Instagram,
+  Facebook,
+  ChevronRight,
+} from "lucide-react"
+import { BrandLogo } from "@/components/marketing/brand-logo"
+import { GlowBackground } from "@/components/marketing/glow-background"
+import { cn } from "@/lib/utils"
 
-// --- Utility Components ---
-
-function FadeIn({ children, delay = 0, className, direction = "up" }: { children: React.ReactNode, delay?: number, className?: string, direction?: "up" | "down" | "left" | "right" }) {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-
-  const variants = {
-    hidden: {
-      opacity: 0,
-      y: direction === "up" ? 40 : direction === "down" ? -40 : 0,
-      x: direction === "left" ? 40 : direction === "right" ? -40 : 0,
-    },
-    visible: {
-      opacity: 1,
-      y: 0,
-      x: 0,
-      transition: { duration: 0.7, delay: delay },
-    }
-  };
-
+function FadeIn({
+  children,
+  delay = 0,
+  className,
+}: {
+  children: React.ReactNode
+  delay?: number
+  className?: string
+}) {
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true, margin: "-80px" })
   return (
     <motion.div
       ref={ref}
-      initial="hidden"
-      animate={isInView ? "visible" : "hidden"}
-      variants={variants}
+      initial={{ opacity: 0, y: 32 }}
+      animate={isInView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.6, delay }}
       className={className}
     >
       {children}
     </motion.div>
-  );
-}
-
-// --- Sections ---
-
-const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <nav className="absolute top-0 inset-x-0 z-50 py-6 px-6 md:px-12 flex items-center justify-between">
-      <div className="flex items-center gap-2 text-white">
-        <div className="bg-white/10 p-2 rounded-full backdrop-blur-sm border border-white/20">
-          <Leaf className="w-5 h-5 text-[#22c55e] fill-current" />
-        </div>
-        <span className="font-serif text-xl font-bold tracking-tight">AgriTwin</span>
-      </div>
-
-      <div className="hidden md:flex items-center gap-8 text-slate-300 text-sm font-medium">
-        <Link href="#solutions" className="hover:text-white transition-colors">Solutions</Link>
-        <Link href="#about" className="hover:text-white transition-colors">About</Link>
-        <Link href="#vision" className="hover:text-white transition-colors">Vision</Link>
-        <Link href="#team" className="hover:text-white transition-colors">Team</Link>
-        <Link href="#contact" className="hover:text-white transition-colors">Contact</Link>
-      </div>
-
-      <div className="hidden md:flex items-center gap-4">
-        <Link href="/login">
-          <Button variant="ghost" className="text-white hover:text-[#22c55e] hover:bg-white/5 rounded-full px-6">
-            Sign In
-          </Button>
-        </Link>
-        <Link href="/register">
-          <Button className="rounded-full bg-[#22c55e] text-white hover:bg-[#16a34a] font-bold px-6 shadow-lg border-0">
-            Get Started
-          </Button>
-        </Link>
-      </div>
-
-      <button className="md:hidden text-white" onClick={() => setIsOpen(!isOpen)}>
-        {isOpen ? <X /> : <Menu />}
-      </button>
-
-      {/* Mobile Menu */}
-      {isOpen && (
-        <div className="absolute top-full left-0 right-0 bg-[#0f172a] border-t border-white/10 p-6 flex flex-col gap-4 md:hidden shadow-2xl">
-          <Link href="#solutions" className="text-slate-300">Solutions</Link>
-          <Link href="#about" className="text-slate-300">About</Link>
-          <Link href="/login" className="text-[#22c55e]">Sign In</Link>
-          <Link href="/register" className="text-white font-bold">Get Started</Link>
-        </div>
-      )}
-    </nav>
-  );
-};
-
-const Hero = () => {
-  return (
-    <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 px-6 bg-[#0f172a] overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 bg-[#0f172a]">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#1e293b] rounded-full blur-[120px] opacity-60 -translate-y-1/2 translate-x-1/3"></div>
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-[#22c55e] rounded-full blur-[150px] opacity-10 translate-y-1/3 -translate-x-1/3"></div>
-      </div>
-
-      <div className="container mx-auto relative z-10 text-center max-w-4xl">
-        <FadeIn>
-          <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl font-medium tracking-tight text-white mb-8 leading-[1.1]">
-            Transforming Agriculture with <span className="text-[#22c55e]">Digital Twin Tech</span>
-          </h1>
-          <p className="text-lg md:text-xl text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
-            Connect deeply with your farm's ecosystem. Monitor crops, predict yields, and optimize resources with your AI assistant.
-          </p>
-          <Link href="/register">
-            <Button className="h-14 px-10 rounded-full bg-[#22c55e] text-white text-lg font-bold hover:bg-[#16a34a] hover:scale-105 transition-all shadow-xl shadow-green-900/20">
-              Get Started <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
-          </Link>
-        </FadeIn>
-      </div>
-    </section>
-  );
-};
-
-const Solutions = () => {
-  const solutions = [
-    {
-      icon: Globe,
-      title: "Digital Twin",
-      desc: "Create a virtual replica of your farm to simulate changes and optimize irrigation."
-    },
-    {
-      icon: Shield,
-      title: "AI Monitoring",
-      desc: "Instant disease detection and health analysis using advanced computer vision."
-    },
-    {
-      icon: Cloud,
-      title: "Weather Analytics",
-      desc: "Hyper-local forecasts and climate risk warnings to protect your harvest."
-    }
-  ];
-
-  return (
-    <section id="solutions" className="bg-[#1e293b] py-20 px-6">
-      <div className="container mx-auto">
-        <FadeIn>
-          <h2 className="text-center font-serif text-3xl md:text-4xl text-white mb-16">Our Solutions</h2>
-        </FadeIn>
-
-        <div className="grid md:grid-cols-3 gap-8">
-          {solutions.map((s, i) => (
-            <FadeIn key={i} delay={i * 0.1}>
-              <div className="bg-[#0f172a] border border-slate-700/50 p-8 rounded-2xl hover:border-[#22c55e]/50 transition-colors text-center group h-full shadow-lg">
-                <div className="w-14 h-14 mx-auto bg-[#1e293b] rounded-full flex items-center justify-center mb-6 text-[#22c55e] group-hover:bg-[#22c55e] group-hover:text-white transition-all">
-                  <s.icon className="w-7 h-7" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3">{s.title}</h3>
-                <p className="text-slate-400 leading-relaxed text-sm">
-                  {s.desc}
-                </p>
-              </div>
-            </FadeIn>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-const About = () => {
-  return (
-    <section id="about" className="bg-[#0f172a] py-24 px-6 overflow-hidden">
-      <div className="container mx-auto">
-        <FadeIn>
-          <div className="text-center max-w-2xl mx-auto mb-20">
-            <h2 className="font-serif text-3xl md:text-4xl text-white mb-8">About AgriTwin</h2>
-            <div className="bg-[#1e293b]/50 p-8 rounded-2xl border border-slate-700 backdrop-blur-sm">
-              <h3 className="text-[#22c55e] font-bold mb-4 uppercase tracking-widest text-xs">Our Story</h3>
-              <p className="text-slate-300 leading-relaxed">
-                "AgriTwin started with a single purpose: How can we make precision agriculture accessible to every farmer? We believe that technology should not be a barrier but a bridge. By combining digital twin technology with accessible AI, we empower farmers to make data-driven decisions that increase yield and sustainability."
-              </p>
-            </div>
-          </div>
-        </FadeIn>
-
-        {/* Roadmap Visualization */}
-        <FadeIn delay={0.2}>
-          <div className="relative bg-[#1e293b] rounded-3xl p-8 md:p-12 border border-slate-700/50">
-            <div className="text-center mb-12">
-              <h3 className="font-serif text-3xl text-white bg-[#22c55e] inline-block px-4 py-1 rounded-lg font-bold uppercase tracking-tighter">Our Strategic Roadmap</h3>
-            </div>
-
-            <div className="relative flex flex-col md:flex-row justify-between items-start gap-8 md:gap-4 mt-8">
-              {/* Line */}
-              <div className="absolute top-[2.5rem] left-0 right-0 h-1 bg-slate-700 hidden md:block border-t border-dashed border-slate-600"></div>
-
-              {[
-                { title: "Q1 - Pilot", desc: "Testing voice models with 100 farmers in Central Kenya." },
-                { title: "Q2 - IoT Expansion", desc: "Rollout of affordable sensor kits and twin visualization." },
-                { title: "Q3 - Partnership", desc: "Integrating with Co-ops and local Gov agencies for scale." },
-                { title: "Q4 - Regional", desc: "Scaling to East Africa and adding more local languages." }
-              ].map((step, i) => (
-                <div key={i} className="relative z-10 flex flex-col items-center text-center max-w-[200px] mx-auto">
-                  <div className="w-20 h-20 rounded-full bg-[#22c55e] text-white font-bold flex items-center justify-center text-xl mb-6 border-8 border-[#0f172a] shadow-xl z-20">
-                    {i + 1}
-                  </div>
-                  <div className="bg-[#0f172a] p-6 rounded-xl border border-slate-700 h-full w-full hover:border-[#22c55e] transition-colors">
-                    <h4 className="text-white font-bold text-sm uppercase mb-3 text-[#22c55e]">{step.title}</h4>
-                    <p className="text-slate-400 text-xs leading-relaxed">
-                      {step.desc}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </FadeIn>
-      </div>
-    </section>
-  );
-};
-
-const MissionVisionValues = () => {
-  return (
-    <section id="vision" className="bg-[#1e293b] py-24 px-6 border-y border-slate-800">
-      <div className="container mx-auto">
-        <FadeIn>
-          <h2 className="text-center font-serif text-3xl md:text-4xl text-white mb-16">Our Mission, Vision and Values</h2>
-        </FadeIn>
-
-        <div className="grid md:grid-cols-3 gap-12 divide-y md:divide-y-0 md:divide-x divide-slate-700 text-slate-300">
-          <FadeIn delay={0.1} className="px-6">
-            <h3 className="font-bold text-lg mb-4 text-[#22c55e]">Mission</h3>
-            <p className="leading-relaxed">
-              To democratize precision agriculture by providing accessible, AI-driven tools that double the productivity of smallholder farmers.
-            </p>
-          </FadeIn>
-          <FadeIn delay={0.2} className="px-6 pt-12 md:pt-0">
-            <h3 className="font-bold text-lg mb-4 text-[#22c55e]">Vision</h3>
-            <p className="leading-relaxed">
-              A world where every farmer, regardless of scale, has a digital companion ensuring food security and sustainable practices.
-            </p>
-          </FadeIn>
-          <FadeIn delay={0.3} className="px-6 pt-12 md:pt-0">
-            <h3 className="font-bold text-lg mb-4 text-[#22c55e]">Values</h3>
-            <ul className="space-y-2 text-sm">
-              <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#22c55e]" /> Sustainability First</li>
-              <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#22c55e]" /> Accessibility</li>
-              <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#22c55e]" /> Community Driven</li>
-              <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#22c55e]" /> Innovation</li>
-            </ul>
-          </FadeIn>
-        </div>
-      </div>
-    </section>
-  );
-};
-
-const Team = () => {
-  const team = [
-    { name: "Joram Mwanyika", role: "Team Lead", color: "bg-blue-600" },
-    { name: "Vidija Dan", role: "Frontend Developer/UI Designer", color: "bg-indigo-600" },
-    { name: "Brian Kipruto", role: "Backend Developer", color: "bg-violet-600" },
-  ];
-
-  return (
-    <section id="team" className="bg-[#0f172a] py-24 px-6">
-      <div className="container mx-auto">
-        <FadeIn>
-          <h2 className="text-center font-serif text-3xl md:text-4xl text-white mb-16">Our Team</h2>
-        </FadeIn>
-
-        <div className="flex flex-wrap justify-center gap-12">
-          {team.map((member, i) => (
-            <FadeIn key={i} delay={i * 0.1} className="text-center group">
-              <div className={cn("w-32 h-32 mx-auto rounded-full mb-6 border-4 border-slate-700 group-hover:border-[#22c55e] transition-colors flex items-center justify-center text-3xl font-bold text-white shadow-2xl", member.color)}>
-                {member.name.charAt(0)}
-              </div>
-              <h3 className="text-white font-bold text-xl mb-1">{member.name}</h3>
-              <p className="text-[#22c55e] text-sm uppercase tracking-wider font-medium">{member.role}</p>
-              <div className="flex justify-center gap-4 mt-4 opacity-40 group-hover:opacity-100 transition-opacity">
-                <Linkedin className="w-5 h-5 text-white hover:text-[#22c55e] cursor-pointer" />
-                <Twitter className="w-5 h-5 text-white hover:text-[#22c55e] cursor-pointer" />
-              </div>
-            </FadeIn>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-const Footer = () => {
-  return (
-    <footer id="contact" className="bg-[#1e293b] pt-24 pb-12 px-6 border-t border-slate-800">
-      <div className="container mx-auto">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20 text-center md:text-left">
-          <div className="lg:col-span-4 text-center mb-12">
-            <h2 className="font-serif text-4xl text-white mb-4">Join Us</h2>
-            <p className="text-slate-400">Be part of the agricultural revolution.</p>
-          </div>
-
-          <div className="bg-[#0f172a] p-8 rounded-2xl border border-slate-700 hover:border-[#22c55e] transition-colors">
-            <h3 className="text-white font-bold mb-4">Invest in Innovation</h3>
-            <p className="text-slate-400 text-sm mb-6">Partner with us to scale sustainable farming solutions across Africa.</p>
-            <Button variant="outline" className="bg-transparent text-white border-white/20 hover:bg-white hover:text-[#0f172a] w-full">Learn More</Button>
-          </div>
-
-          <div className="bg-[#0f172a] p-8 rounded-2xl border border-slate-700 hover:border-[#22c55e] transition-colors">
-            <h3 className="text-white font-bold mb-4">Partner for Progress</h3>
-            <p className="text-slate-400 text-sm mb-6">NGOs and Governments: Let's collaborate for food security.</p>
-            <Button variant="outline" className="bg-transparent text-white border-white/20 hover:bg-white hover:text-[#0f172a] w-full">Partner With Us</Button>
-          </div>
-
-          <div className="bg-[#0f172a] p-8 rounded-2xl border border-slate-700 lg:col-span-2">
-            <h3 className="text-white font-bold mb-4">Contact Us</h3>
-            <div className="space-y-4 text-slate-300 text-sm">
-              <div className="flex items-center gap-3"><Mail className="w-4 h-4 text-[#22c55e]" /> jorammwanyika@gmail.com</div>
-              <div className="flex items-center gap-3"><Phone className="w-4 h-4 text-[#22c55e]" /> +254 794 728 645</div>
-              <div className="flex items-center gap-3"><MapPin className="w-4 h-4 text-[#22c55e]" /> Nairobi, Kenya</div>
-              <div className="flex items-center gap-4 mt-6">
-                <Twitter className="w-5 h-5 hover:text-[#22c55e] cursor-pointer" />
-                <Linkedin className="w-5 h-5 hover:text-[#22c55e] cursor-pointer" />
-                <Instagram className="w-5 h-5 hover:text-[#22c55e] cursor-pointer" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Champions/Partners Logos (Placeholder) */}
-        <div className="mb-20 text-center">
-          <h4 className="text-slate-500 uppercase tracking-widest text-xs font-bold mb-8">Champions of Our Mission</h4>
-          <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-30 grayscale hover:grayscale-0 transition-all duration-500">
-            <div className="h-10 w-24 bg-white/20 rounded"></div>
-            <div className="h-10 w-24 bg-white/20 rounded"></div>
-            <div className="h-10 w-24 bg-white/20 rounded"></div>
-            <div className="h-10 w-24 bg-white/20 rounded"></div>
-          </div>
-        </div>
-
-        <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500">
-          <div className="flex items-center gap-2">
-            <Leaf className="w-4 h-4 text-[#22c55e]" />
-            <span>&copy; 2026 AgriTwin. All rights reserved.</span>
-          </div>
-          <div className="flex gap-6">
-            <Link href="#" className="hover:text-white">Privacy Policy</Link>
-            <Link href="#" className="hover:text-white">Terms of Use</Link>
-          </div>
-        </div>
-      </div>
-    </footer>
   )
 }
 
-// --- Main Page Component ---
+const navLinks = [
+  { href: "#solutions", label: "Solutions" },
+  { href: "#about", label: "About" },
+  { href: "#how-it-works", label: "Features" },
+  { href: "#use-cases", label: "Use Cases" },
+  { href: "#contact", label: "Contact" },
+]
 
 export default function LandingPage() {
+  const [menuOpen, setMenuOpen] = useState(false)
+
   return (
-    <div className="font-sans antialiased text-slate-900 selection:bg-[#22c55e] selection:text-white bg-[#0f172a]">
-      <Navbar />
-      <Hero />
-      <Solutions />
-      <About />
-      <MissionVisionValues />
-      <Team />
-      <Footer />
+    <div className="marketing-theme min-h-screen bg-[#050a0e] font-sans text-white antialiased selection:bg-[#00e676]/30 selection:text-white">
+      <GlowBackground />
+
+      {/* Navbar */}
+      <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#050a0e]/80 backdrop-blur-xl">
+        <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-10">
+          <BrandLogo />
+          <div className="hidden items-center gap-8 text-sm font-medium text-slate-400 md:flex">
+            {navLinks.map((l) => (
+              <Link key={l.href} href={l.href} className="transition-colors hover:text-white">
+                {l.label}
+              </Link>
+            ))}
+          </div>
+          <div className="hidden items-center gap-3 md:flex">
+            <Link href="/login" className="px-4 text-sm font-medium text-slate-300 transition-colors hover:text-white">
+              Sign in
+            </Link>
+            <Link href="/register" className="btn-primary inline-flex h-10 items-center gap-2 px-6 text-sm">
+              Get Started <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <button type="button" className="text-white md:hidden" onClick={() => setMenuOpen(!menuOpen)} aria-label="Menu">
+            {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </nav>
+        {menuOpen && (
+          <div className="border-t border-white/[0.06] bg-[#050a0e] px-6 py-4 md:hidden">
+            {navLinks.map((l) => (
+              <Link key={l.href} href={l.href} className="block py-2 text-slate-300" onClick={() => setMenuOpen(false)}>
+                {l.label}
+              </Link>
+            ))}
+            <div className="mt-4 flex flex-col gap-2">
+              <Link href="/login" className="py-2 text-[#00e676]">
+                Sign in
+              </Link>
+              <Link href="/register" className="btn-primary inline-flex h-10 items-center justify-center text-sm">
+                Get Started
+              </Link>
+            </div>
+          </div>
+        )}
+      </header>
+
+      {/* Hero */}
+      <section className="relative overflow-hidden px-6 pb-20 pt-12 lg:px-10 lg:pb-28 lg:pt-16">
+        <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-2 lg:gap-16">
+          <FadeIn>
+            <h1 className="text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl">
+              Transforming Agriculture with{" "}
+              <span className="bg-gradient-to-r from-[#00e676] to-emerald-300 bg-clip-text text-transparent">
+                Digital Twin Tech
+              </span>
+            </h1>
+            <p className="mt-6 max-w-lg text-base leading-relaxed text-slate-400 sm:text-lg">
+              Create a virtual replica of your farm to simulate changes, monitor crops in real time, and optimize
+              resources with your AI assistant.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+              <Link href="/register" className="btn-primary inline-flex h-12 items-center gap-2 px-8 text-base">
+                Get Started <ArrowRight className="h-5 w-5" />
+              </Link>
+              <button type="button" className="btn-outline inline-flex h-12 items-center gap-2 px-6 text-sm font-medium">
+                <Play className="h-4 w-4 fill-current" /> Watch Demo
+              </button>
+            </div>
+            <div className="mt-10 flex items-center gap-4">
+              <div className="flex -space-x-2">
+                {["JM", "BK", "VD"].map((initials, i) => (
+                  <div
+                    key={initials}
+                    className={cn(
+                      "flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#050a0e] text-xs font-bold",
+                      i === 0 && "bg-emerald-600",
+                      i === 1 && "bg-cyan-700",
+                      i === 2 && "bg-violet-700",
+                    )}
+                  >
+                    {initials}
+                  </div>
+                ))}
+              </div>
+              <p className="text-sm text-slate-400">
+                Trusted by <span className="font-semibold text-white">1,200+</span> farmers across Kenya
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={0.15} className="relative">
+            <div className="absolute -inset-6 rounded-3xl bg-[#00e676]/10 blur-3xl" />
+            <div className="relative overflow-hidden rounded-2xl ring-1 ring-[#00e676]/20 shadow-2xl shadow-black/60">
+              <Image
+                src="/hero-dashboard.png"
+                alt="AgriTwin smart farm digital twin dashboard"
+                width={700}
+                height={520}
+                className="w-full object-cover"
+                priority
+              />
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* Solutions */}
+      <section id="solutions" className="border-t border-white/[0.04] bg-[#030608]/50 px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-7xl">
+          <FadeIn className="text-center">
+            <h2 className="text-3xl font-bold sm:text-4xl">Our Solutions</h2>
+            <p className="mx-auto mt-4 max-w-2xl text-slate-400">
+              Everything you need to run a smarter, more sustainable farm — from sensors to AI insights.
+            </p>
+          </FadeIn>
+          <div className="mt-14 grid gap-6 md:grid-cols-3">
+            {[
+              {
+                icon: Globe,
+                title: "Real-time Monitoring",
+                desc: "Track soil moisture, temperature, and crop health across every block from one dashboard.",
+              },
+              {
+                icon: Brain,
+                title: "AI-Powered Insights",
+                desc: "Get disease detection, pest alerts, and voice-friendly advice in English, Swahili, and more.",
+              },
+              {
+                icon: Layers,
+                title: "Digital Twin Simulation",
+                desc: "Simulate irrigation and planting changes on a virtual replica before you act in the field.",
+              },
+            ].map((item, i) => (
+              <FadeIn key={item.title} delay={i * 0.08}>
+                <div className="glass-card group flex h-full flex-col p-8 transition-all hover:border-[#00e676]/30 hover:shadow-[0_0_40px_rgba(0,230,118,0.08)]">
+                  <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#00e676]/20 bg-[#00e676]/10 text-[#00e676] shadow-[0_0_24px_rgba(0,230,118,0.15)] transition-colors group-hover:bg-[#00e676] group-hover:text-[#050a0e]">
+                    <item.icon className="h-7 w-7" />
+                  </div>
+                  <h3 className="text-xl font-bold">{item.title}</h3>
+                  <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-400">{item.desc}</p>
+                  <Link href="/register" className="mt-6 inline-flex items-center gap-1 text-sm font-medium text-[#00e676] hover:gap-2 transition-all">
+                    Learn more <ChevronRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* About */}
+      <section id="about" className="px-6 py-20 lg:px-10">
+        <div className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-2">
+          <FadeIn>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#00e676]">About AgriTwin</p>
+            <h2 className="mt-4 text-3xl font-bold leading-tight sm:text-4xl">
+              Empowering farmers with accessible precision agriculture
+            </h2>
+            <p className="mt-6 leading-relaxed text-slate-400">
+              AgriTwin started with a single purpose: make precision agriculture accessible to every farmer. By
+              combining digital twin technology with AI that speaks your language, we help you make data-driven
+              decisions that increase yield and sustainability.
+            </p>
+            <div className="mt-10 grid grid-cols-3 gap-6">
+              {[
+                { value: "1,200+", label: "Happy Users" },
+                { value: "25K+", label: "Acres Monitored" },
+                { value: "98%", label: "Satisfaction" },
+              ].map((stat) => (
+                <div key={stat.label}>
+                  <p className="text-2xl font-bold text-[#00e676] sm:text-3xl">{stat.value}</p>
+                  <p className="mt-1 text-xs text-slate-500 sm:text-sm">{stat.label}</p>
+                </div>
+              ))}
+            </div>
+          </FadeIn>
+          <FadeIn delay={0.1} className="relative">
+            <div className="glass-card overflow-hidden p-2 ring-1 ring-white/10">
+              <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
+                <Image
+                  src="/about-farmer.png"
+                  alt="Farmer using AgriTwin tablet in the field"
+                  fill
+                  className="object-cover object-center"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#050a0e]/40 via-transparent to-transparent lg:from-[#050a0e]/20" />
+              </div>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section id="how-it-works" className="border-t border-white/[0.04] bg-[#030608]/50 px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-7xl">
+          <FadeIn className="text-center">
+            <h2 className="text-3xl font-bold sm:text-4xl">How It Works</h2>
+            <p className="mx-auto mt-4 max-w-xl text-slate-400">Four simple steps from signup to smarter harvests.</p>
+          </FadeIn>
+          <div className="relative mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="absolute top-10 left-[12%] right-[12%] hidden h-px border-t border-dashed border-[#00e676]/20 lg:block" />
+            {[
+              { step: 1, icon: Wifi, title: "Connect", desc: "Link sensors and map your farm blocks in minutes." },
+              { step: 2, icon: Globe, title: "Monitor", desc: "Watch live moisture, NPK, and weather on your twin." },
+              { step: 3, icon: BarChart3, title: "Analyze", desc: "AI scans crops and surfaces actionable insights." },
+              { step: 4, icon: Sprout, title: "Grow", desc: "Act on recommendations and track yield improvements." },
+            ].map((item, i) => (
+              <FadeIn key={item.title} delay={i * 0.06} className="relative flex flex-col items-center text-center">
+                <div className="relative z-10 flex h-16 w-16 items-center justify-center rounded-full border-4 border-[#050a0e] bg-[#00e676] text-xl font-bold text-[#050a0e] shadow-[0_0_30px_rgba(0,230,118,0.4)]">
+                  {item.step}
+                </div>
+                <div className="mt-6 flex h-12 w-12 items-center justify-center rounded-xl border border-[#00e676]/20 bg-[#00e676]/10 text-[#00e676]">
+                  <item.icon className="h-6 w-6" />
+                </div>
+                <h3 className="mt-4 font-bold">{item.title}</h3>
+                <p className="mt-2 text-sm text-slate-400">{item.desc}</p>
+              </FadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Use cases */}
+      <section id="use-cases" className="px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-7xl">
+          <FadeIn className="text-center">
+            <h2 className="text-3xl font-bold sm:text-4xl">Built for Every Farm</h2>
+            <p className="mx-auto mt-4 max-w-xl text-slate-400">From smallholders to agribusiness — scale at your pace.</p>
+          </FadeIn>
+          <div className="mt-14 grid gap-6 sm:grid-cols-2">
+            {[
+              { icon: Sprout, title: "Crop Farming", desc: "Maize, beans, tomatoes — monitor blocks and get localized advice.", color: "text-[#00e676] border-[#00e676]/25 bg-[#00e676]/10" },
+              { icon: Layers, title: "Greenhouses", desc: "Fine-tune humidity and temperature for high-value produce.", color: "text-cyan-400 border-cyan-500/25 bg-cyan-500/10" },
+              { icon: Globe, title: "Livestock & Mixed", desc: "Combine pasture and crop data in one digital twin view.", color: "text-violet-400 border-violet-500/25 bg-violet-500/10" },
+              { icon: Building2, title: "Agri Businesses", desc: "Manage teams, tasks, and multiple farms from a single dashboard.", color: "text-amber-400 border-amber-500/25 bg-amber-500/10" },
+            ].map((item, i) => (
+              <FadeIn key={item.title} delay={i * 0.06}>
+                <div className="glass-card flex gap-5 p-6 transition-colors hover:border-white/15">
+                  <div className={cn("flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border", item.color)}>
+                    <item.icon className="h-7 w-7" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold">{item.title}</h3>
+                    <p className="mt-2 text-sm text-slate-400">{item.desc}</p>
+                  </div>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="border-t border-white/[0.04] bg-[#030608]/50 px-6 py-20 lg:px-10">
+        <div className="mx-auto max-w-7xl">
+          <FadeIn className="text-center">
+            <h2 className="text-3xl font-bold sm:text-4xl">What Our Users Say</h2>
+          </FadeIn>
+          <div className="mt-14 grid gap-6 md:grid-cols-3">
+            {[
+              { quote: "AgriTwin helped me catch a maize disease early. The voice advisor in Swahili is a game changer.", name: "James M.", role: "Maize Farmer, Nakuru" },
+              { quote: "We monitor three greenhouses from one phone. Moisture alerts alone saved our tomato crop.", name: "Grace W.", role: "Greenhouse Owner" },
+              { quote: "Our co-op uses it to assign field tasks. Farmers finally have one place for weather and prices.", name: "Peter O.", role: "Co-op Manager" },
+            ].map((t, i) => (
+              <FadeIn key={t.name} delay={i * 0.08}>
+                <div className="glass-card flex h-full flex-col p-6">
+                  <Quote className="h-8 w-8 text-[#00e676]/60" />
+                  <p className="mt-4 flex-1 text-sm leading-relaxed text-slate-300">&ldquo;{t.quote}&rdquo;</p>
+                  <div className="mt-6 flex items-center gap-3 border-t border-white/[0.06] pt-6">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#00e676]/20 text-sm font-bold text-[#00e676]">
+                      {t.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-sm">{t.name}</p>
+                      <p className="text-xs text-slate-500">{t.role}</p>
+                    </div>
+                  </div>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="px-6 py-16 lg:px-10">
+        <FadeIn>
+          <div className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl border border-[#00e676]/20 bg-gradient-to-br from-[#00e676]/10 via-[#030608] to-[#050a0e] p-10 text-center shadow-[0_0_60px_rgba(0,230,118,0.12)] sm:p-14">
+            <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#00e676]/10 blur-3xl" />
+            <h2 className="relative text-3xl font-bold sm:text-4xl">Ready to grow smarter?</h2>
+            <p className="relative mx-auto mt-4 max-w-lg text-slate-400">
+              Join thousands of farmers using AI-powered digital twins. Free to start — set up your farm in minutes.
+            </p>
+            <Link href="/register" className="btn-primary relative mt-8 inline-flex h-12 items-center gap-2 px-10 text-base">
+              Get Started for Free <ArrowRight className="h-5 w-5" />
+            </Link>
+          </div>
+        </FadeIn>
+      </section>
+
+      {/* Footer */}
+      <footer id="contact" className="border-t border-white/[0.06] bg-[#030608] px-6 pb-10 pt-16 lg:px-10">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid gap-12 lg:grid-cols-5">
+            <div className="lg:col-span-2">
+              <BrandLogo />
+              <p className="mt-4 max-w-xs text-sm text-slate-400">
+                Digital twin technology for sustainable, data-driven farming across Africa.
+              </p>
+              <div className="mt-6 flex gap-4">
+                {[Twitter, Linkedin, Instagram, Facebook].map((Icon, i) => (
+                  <a
+                    key={i}
+                    href="#"
+                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 text-slate-400 transition-colors hover:border-[#00e676]/40 hover:text-[#00e676]"
+                    aria-label="Social"
+                  >
+                    <Icon className="h-4 w-4" />
+                  </a>
+                ))}
+              </div>
+            </div>
+            {[
+              { title: "Product", links: ["Solutions", "Features", "Pricing", "Demo"] },
+              { title: "Company", links: ["About", "Team", "Careers", "Contact"] },
+              { title: "Resources", links: ["Blog", "Docs", "Support", "FAQ"] },
+            ].map((col) => (
+              <div key={col.title}>
+                <h4 className="font-semibold text-sm">{col.title}</h4>
+                <ul className="mt-4 space-y-2">
+                  {col.links.map((link) => (
+                    <li key={link}>
+                      <Link href="#" className="text-sm text-slate-500 transition-colors hover:text-[#00e676]">
+                        {link}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+            <div>
+              <h4 className="font-semibold text-sm">Newsletter</h4>
+              <p className="mt-2 text-xs text-slate-500">Farm tips and product updates.</p>
+              <form className="mt-4 flex gap-2" onSubmit={(e) => e.preventDefault()}>
+                <input
+                  type="email"
+                  placeholder="Your email"
+                  className="input-mkt h-10 flex-1 px-3 text-sm"
+                />
+                <button type="submit" className="btn-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-full p-0">
+                  <Send className="h-4 w-4" />
+                </button>
+              </form>
+            </div>
+          </div>
+          <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-white/[0.06] pt-8 text-xs text-slate-500 sm:flex-row">
+            <div className="flex items-center gap-2">
+              <Leaf className="h-4 w-4 text-[#00e676]" />
+              <span>&copy; 2026 AgriTwin. All rights reserved.</span>
+            </div>
+            <div className="flex gap-6">
+              <Link href="#" className="hover:text-white">
+                Privacy Policy
+              </Link>
+              <Link href="#" className="hover:text-white">
+                Terms of Service
+              </Link>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
-  );
+  )
 }

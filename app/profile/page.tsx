@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Header } from "@/components/header"
-import { BottomNav } from "@/components/bottom-nav"
+import { AppShell } from "@/components/app-shell"
+import { AppPageHeader } from "@/components/app-page-header"
 import { Card, CardContent } from "@/components/ui/card"
 import { User, Globe, ChevronRight, LogOut, Settings, Bell, PenLine, Shield, HelpCircle } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
@@ -20,6 +20,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { normalizeLanguageCode } from "@/lib/languages"
+
+const CHAT_LANGUAGE_STORAGE_KEY = "agritwin_chat_language"
 
 const LANGUAGES = [
   { code: "en", name: "English", flag: "🇬🇧" },
@@ -43,6 +46,8 @@ export default function ProfilePage() {
 
   useEffect(() => {
     fetchProfile();
+    const saved = localStorage.getItem(CHAT_LANGUAGE_STORAGE_KEY)
+    if (saved) setLanguage(normalizeLanguageCode(saved))
   }, [])
 
   const fetchProfile = async () => {
@@ -83,17 +88,18 @@ export default function ProfilePage() {
   }
 
   const handleLanguageChange = (code: string) => {
-    setLanguage(code)
-    const lang = LANGUAGES.find((l) => l.code === code)
+    const normalized = normalizeLanguageCode(code)
+    setLanguage(normalized)
+    localStorage.setItem(CHAT_LANGUAGE_STORAGE_KEY, normalized)
+    const lang = LANGUAGES.find((l) => l.code === code || l.code === normalized)
     setIsLanguageOpen(false)
     toast.success(`Language changed to ${lang?.name}`)
   }
 
   return (
-    <div className="min-h-screen bg-[#f0efe9] pb-24">
-      <Header title="My Profile" />
-
-      <main className="container px-4 py-6 space-y-6 max-w-4xl mx-auto">
+    <AppShell>
+      <div className="space-y-6 max-w-4xl mx-auto w-full">
+        <AppPageHeader subtitle="Settings & account" />
         {/* User Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -326,9 +332,7 @@ export default function ProfilePage() {
           </div>
         </motion.div>
 
-        {/* Bottom Navigation */}
-        <BottomNav />
-      </main>
-    </div>
+      </div>
+    </AppShell>
   )
 }

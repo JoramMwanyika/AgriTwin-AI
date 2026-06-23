@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { getLanguageName, normalizeLanguageCode } from "@/lib/languages"
 
 // Azure Computer Vision for image analysis
 const VISION_ENDPOINT = process.env.AZURE_VISION_ENDPOINT!
@@ -13,7 +14,8 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData()
     const imageFile = formData.get("image") as File
-    const language = (formData.get("language") as string) || "en"
+    const languageCode = normalizeLanguageCode((formData.get("language") as string) || "en")
+    const languageLabel = getLanguageName(languageCode)
 
     if (!imageFile) {
       return NextResponse.json({ error: "No image provided" }, { status: 400 })
@@ -24,8 +26,9 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(arrayBuffer)
 
     // Step 1: Analyze image with Azure Computer Vision
+    // Removed 'caption,denseCaptions' as they are not supported in all Azure regions
     const visionResponse = await fetch(
-      `${VISION_ENDPOINT}/computervision/imageanalysis:analyze?api-version=2024-02-01&features=caption,tags,objects,denseCaptions`,
+      `${VISION_ENDPOINT}/computervision/imageanalysis:analyze?api-version=2024-02-01&features=tags,objects`,
       {
         method: "POST",
         headers: {
@@ -42,21 +45,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Failed to analyze image", details: errorText }, { status: 500 })
     }
 
-    const visionData = await visionResponse.json()
+    const visionText = await visionResponse.text()
+    let visionData;
+    try {
+      visionData = JSON.parse(visionText)
+    } catch {
+      console.error("Vision API JSON Parse Error:", visionText)
+      return NextResponse.json({ error: "Invalid response from Vision API" }, { status: 500 })
+    }
 
     // Extract relevant information
-    const caption = visionData.captionResult?.text || "Unknown image"
+    const caption = visionData.captionResult?.text || "Image visual features extracted"
     const tags = visionData.tagsResult?.values?.map((t: { name: string }) => t.name).join(", ") || ""
     const denseCaptions = visionData.denseCaptionsResult?.values?.map((c: { text: string }) => c.text).join("; ") || ""
 
-    // Step 2: Use GPT-4 to analyze for plant diseases
-    const analysisPrompt = `You are an expert agricultural plant pathologist. Analyze this image description and identify any plant diseases, pests, or health issues.
+    // Step 2: Use GitHub Models (gpt-4o) with Vision to analyze for plant diseases
+    const analysisPrompt = `You are an expert agricultural plant pathologist. Analyze this image and identify any plant diseases, pests, or health issues.
 
-Image Caption: ${caption}
-Tags: ${tags}
-Detailed Descriptions: ${denseCaptions}
+Computer Vision Tags: ${tags}
 
-Based on this information:
+Based on this image and the provided tags:
 1. Identify if this appears to be a plant/crop image
 2. If it's a plant, identify any visible diseases, pests, nutrient deficiencies, or health issues
 3. Provide the likely disease/condition name
@@ -64,7 +72,11 @@ Based on this information:
 5. List key symptoms visible
 6. Provide an actionable recommendation on what to do next (TREATMENT).
 
-VERY IMPORTANT: Translate your ENTIRE final JSON output (including the treatment and symptoms) into the language code: "${language}" if it is not "en". 
+VERY IMPORTANT: ${
+      languageCode === "en"
+        ? "Write all JSON string values in English."
+        : `Translate your ENTIRE final JSON output (treatment, symptoms, summary, condition) into ${languageLabel}. Write as a native speaker; do not leave English in string values.`
+    } 
 
 Respond in this exact JSON format:
 {
@@ -78,24 +90,39 @@ Respond in this exact JSON format:
   "treatment": "Actionable recommendation or treatment plan that the farmer should do right now."
 }`
 
-    const gptUrl = new URL(GPT_ENDPOINT)
-    gptUrl.searchParams.set("api-version", GPT_API_VERSION)
+    const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+    const GITHUB_MODEL = process.env.GITHUB_MODEL || "gpt-4o";
+    let GITHUB_ENDPOINT = process.env.GITHUB_MODELS_ENDPOINT || "https://models.inference.ai.azure.com/chat/completions";
+    if (!GITHUB_ENDPOINT.endsWith("/chat/completions")) {
+      GITHUB_ENDPOINT = `${GITHUB_ENDPOINT.replace(/\/$/, "")}/chat/completions`;
+    }
 
-    const gptResponse = await fetch(gptUrl.toString(), {
+    const mimeType = imageFile.type || "image/jpeg"
+    const base64Image = buffer.toString("base64")
+    const dataUrl = `data:${mimeType};base64,${base64Image}`
+
+    const gptResponse = await fetch(GITHUB_ENDPOINT, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "api-key": GPT_KEY,
+        "Authorization": `Bearer ${GITHUB_TOKEN}`,
       },
       body: JSON.stringify({
+        model: GITHUB_MODEL,
         messages: [
           {
             role: "system",
             content: "You are an expert agricultural plant pathologist. Always respond with valid JSON.",
           },
-          { role: "user", content: analysisPrompt },
+          { 
+            role: "user", 
+            content: [
+              { type: "text", text: analysisPrompt },
+              { type: "image_url", image_url: { url: dataUrl } }
+            ]
+          },
         ],
-        max_tokens: 500,
+        max_tokens: 800,
         temperature: 0.3,
       }),
     })
@@ -119,16 +146,35 @@ Respond in this exact JSON format:
       })
     }
 
-    const gptData = await gptResponse.json()
-    const gptContent = gptData.choices?.[0]?.message?.content || "{}"
+    const gptText = await gptResponse.text()
+    let gptData;
+    try {
+      gptData = JSON.parse(gptText)
+    } catch {
+      console.error("GPT API JSON Parse Error:", gptText)
+      gptData = {}
+    }
+    const gptContent = gptData.choices?.[0]?.message?.content || ""
 
     let analysis
     try {
-      // Try to parse JSON from GPT response
       const jsonMatch = gptContent.match(/\{[\s\S]*\}/)
-      analysis = jsonMatch ? JSON.parse(jsonMatch[0]) : { summary: gptContent }
+      analysis = jsonMatch ? JSON.parse(jsonMatch[0]) : null
+      
+      if (!analysis || !analysis.severity || !analysis.condition) {
+        throw new Error("Missing required fields in GPT response")
+      }
     } catch {
-      analysis = { summary: gptContent, condition: "Analysis completed", severity: "Unknown" }
+      analysis = { 
+        isPlant: false,
+        plantType: "Unknown",
+        condition: "Analysis unavailable", 
+        severity: "Unknown",
+        symptoms: [],
+        confidence: "Low",
+        summary: gptContent || "Failed to generate a valid analysis. Please try again.",
+        treatment: "Please try taking another clear picture of the plant."
+      }
     }
 
     return NextResponse.json({

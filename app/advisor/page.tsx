@@ -9,6 +9,9 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Mic, Send, Volume2, VolumeX, Globe, Loader2, Phone, PhoneOff, Image as ImageIcon, Sparkles } from "lucide-react"
 import { toast } from "sonner"
 import { speakText, startSpeechRecognition, startContinuousRecognition } from "@/lib/speech"
+import { getChatGreeting, getLanguageName, normalizeLanguageCode } from "@/lib/languages"
+
+const CHAT_LANGUAGE_STORAGE_KEY = "agritwin_chat_language"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import Image from "next/image"
 import ReactMarkdown from "react-markdown"
@@ -112,18 +115,23 @@ export default function AdvisorPage() {
   const aiSpeakLockRef = useRef<number>(0)
 
   // Start continuous recognition helper
-  const startContinuousRecognizer = async () => {
+  const startContinuousRecognizer = async (langOverride?: string) => {
     try {
       if (continuousRecognitionRef.current) {
-        console.log("Continuous recognizer already running")
-        return
+        try {
+          continuousRecognitionRef.current.stop()
+        } catch {
+          /* ignore */
+        }
+        continuousRecognitionRef.current = null
       }
 
+      const lang = langOverride ?? language
       continuousRecognitionRef.current = await startContinuousRecognition(
         continuousOnResultRef.current!,
         continuousOnErrorRef.current!,
         continuousOnListeningRef.current!,
-        language,
+        lang,
       )
     } catch (err) {
       console.error("Failed to start continuous recognizer:", err)
@@ -145,21 +153,23 @@ export default function AdvisorPage() {
         const res = await fetch('/api/chat')
         if (res.ok) {
           const history = await res.json()
+          const activeLang = normalizeLanguageCode(
+            localStorage.getItem(CHAT_LANGUAGE_STORAGE_KEY) || language,
+          )
           if (Array.isArray(history) && history.length > 0) {
-            const formattedHistory = history.map((msg: any) => ({
-              id: msg.id,
-              role: (msg.role === 'assistant' ? 'ai' : 'user') as 'ai' | 'user',
-              text: msg.content,
-              // Restore analysis if saved (we saved it as json in msg.imageAnalysis if user role)
-              // For now, simpler mapping
-            }))
-            setMessages(prev => {
-              // Keep the greeting if history is empty or just append? 
-              // Usually we replace if history exists, or prepend history to greeting?
-              // If history exists, we probably don't need the generic greeting, or it's the last message.
-              // Let's just use history if available, else keep generic greeting.
-              return formattedHistory
-            })
+            const formattedHistory = history
+              .filter(
+                (msg: { language?: string | null }) =>
+                  !msg.language || normalizeLanguageCode(msg.language) === activeLang,
+              )
+              .map((msg: { id: string; role: string; content: string }) => ({
+                id: msg.id,
+                role: (msg.role === "assistant" ? "ai" : "user") as "ai" | "user",
+                text: msg.content,
+              }))
+            if (formattedHistory.length > 0) {
+              setMessages(formattedHistory)
+            }
           }
         }
       } catch (error) {
@@ -170,11 +180,57 @@ export default function AdvisorPage() {
     fetchHistory()
   }, [])
 
+  const applyLanguage = (code: string) => {
+    const normalized = normalizeLanguageCode(code)
+    setLanguage(normalized)
+    localStorage.setItem(CHAT_LANGUAGE_STORAGE_KEY, normalized)
+    toast.success(`Language: ${getLanguageName(normalized)}`)
+    setMessages([
+      {
+        id: Date.now(),
+        role: "ai",
+        text:
+          getChatGreeting(normalized) +
+          " You can also take a photo of your crops to check for diseases!",
+        actions: ["Check my crop health", "Weather advice", "Pest control tips", "Scan plant for disease"],
+      },
+    ])
+    if (continuousRecognitionRef.current) {
+      try {
+        continuousRecognitionRef.current.stop()
+      } catch {
+        /* ignore */
+      }
+      continuousRecognitionRef.current = null
+      if (isVoiceMode) {
+        void startContinuousRecognizer(normalized)
+      }
+    }
+  }
+
+  useEffect(() => {
+    const saved = localStorage.getItem(CHAT_LANGUAGE_STORAGE_KEY)
+    if (!saved) return
+    const normalized = normalizeLanguageCode(saved)
+    setLanguage(normalized)
+    setMessages([
+      {
+        id: Date.now(),
+        role: "ai",
+        text:
+          getChatGreeting(normalized) +
+          " You can also take a photo of your crops to check for diseases!",
+        actions: ["Check my crop health", "Weather advice", "Pest control tips", "Scan plant for disease"],
+      },
+    ])
+  }, [])
+
   const analyzeImage = async (
     file: File,
   ): Promise<{ analysis: Message["analysis"]; rawVision: { caption: string } } | null> => {
     const formData = new FormData()
     formData.append("image", file)
+    formData.append("language", language)
 
     try {
       const response = await fetch("/api/analyze-image", {
@@ -207,35 +263,19 @@ export default function AdvisorPage() {
     setIsLoading(true)
 
     try {
-      // DIRECT_LANGUAGES are handled directly by the AI (no separate translation step)
-      const DIRECT_LANGUAGES = ["sw", "ki", "luo", "af", "am", "ar", "ha", "ig", "rw", "ln", "lg", "rn", "st", "nso", "tn", "so", "ti", "xh", "yo", "zu", "fr"]
-      const useDirectGen = DIRECT_LANGUAGES.includes(language)
-
-      // Translate to English if needed (and not using direct generation)
-      let textToSend = userText
-      if (language !== "en" && !useDirectGen) {
-        const translateRes = await fetch("/api/translate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: userText, from: language, to: "en" }),
-        })
-        if (translateRes.ok) {
-          const { translatedText } = await translateRes.json()
-          textToSend = translatedText
-        }
-      }
-
-      // Get AI response
+      // Let Ollama answer directly in the selected language (no translate round-trip)
+      const activeLanguage = normalizeLanguageCode(language)
+      const historyLimit = activeLanguage === "en" ? 10 : 2
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: [
-            ...messages.filter((m) => m.role === "user" || m.role === "ai").slice(-10),
-            { role: "user", text: textToSend },
+            ...messages.filter((m) => m.role === "user" || m.role === "ai").slice(-historyLimit),
+            { role: "user", text: userText },
           ],
           imageAnalysis: imageAnalysisData,
-          language: language, // Pass the target language to the API
+          language: activeLanguage,
         }),
       })
 
@@ -252,26 +292,10 @@ export default function AdvisorPage() {
         return
       }
 
-      const message = data.message
-
-      // Translate response if needed (and not using direct generation)
-      let finalMessage = message
-      if (language !== "en" && !useDirectGen) {
-        const translateRes = await fetch("/api/translate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: message, from: "en", to: language }),
-        })
-        if (translateRes.ok) {
-          const { translatedText } = await translateRes.json()
-          finalMessage = translatedText
-        }
-      }
-
       const aiMsg: Message = {
         id: Date.now() + 1,
         role: "ai",
-        text: finalMessage,
+        text: data.message,
       }
       setMessages((prev) => [...prev, aiMsg])
 
@@ -428,7 +452,7 @@ export default function AdvisorPage() {
 
       setIsSpeaking(true)
       try {
-        const greeting = GREETINGS[language] || GREETINGS["en"]
+        const greeting = getChatGreeting(language)
         await speakText(greeting, language)
       } finally {
         setIsSpeaking(false)
@@ -490,7 +514,9 @@ export default function AdvisorPage() {
     }
   }
 
-  const currentLang = LANGUAGES.find((l) => l.code === language) || LANGUAGES[0]
+  const normalizedLanguage = normalizeLanguageCode(language)
+  const currentLang =
+    LANGUAGES.find((l) => normalizeLanguageCode(l.code) === normalizedLanguage) || LANGUAGES[0]
 
   return (
     <div className="flex flex-col h-screen bg-[#0f172a]">
@@ -507,8 +533,15 @@ export default function AdvisorPage() {
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             {LANGUAGES.map((lang) => (
-              <DropdownMenuItem key={lang.code} onClick={() => setLanguage(lang.code)}>
+              <DropdownMenuItem
+                key={lang.code}
+                onClick={() => applyLanguage(lang.code)}
+                className={normalizedLanguage === normalizeLanguageCode(lang.code) ? "bg-slate-700" : ""}
+              >
                 <span className="text-lg mr-2">{lang.flag}</span> {lang.name}
+                {normalizedLanguage === normalizeLanguageCode(lang.code) && (
+                  <span className="ml-auto text-xs text-[#22c55e]">Active</span>
+                )}
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>

@@ -5,17 +5,17 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Earthy Palette based on Design Inspiration */
-  --background: #f0efe9; /* Light Beige/Bone */
-  --foreground: #1a3c2f; /* Dark Forest Green */
+  /* AgriTwin dashboard palette */
+  --background: #f4f5f7;
+  --foreground: #1e293b;
 
   --card: #ffffff;
-  --card-foreground: #1a3c2f;
+  --card-foreground: #1e293b;
 
   --popover: #ffffff;
   --popover-foreground: #1a3c2f;
 
-  --primary: #2d5a47; /* Earthy Green */
+  --primary: #059669;
   --primary-foreground: #ffffff;
 
   --secondary: #e3e0d6; /* Darker Beige for accents */
@@ -151,6 +151,70 @@
   h4,
   h5,
   h6 {
-    @apply font-serif tracking-tight;
+    @apply font-sans tracking-tight;
   }
+  body {
+    font-family: var(--font-sans), system-ui, sans-serif;
+  }
+}
+
+/* Marketing / auth dark theme */
+.marketing-theme {
+  --mkt-bg: #050a0e;
+  --mkt-accent: #00e676;
+  --mkt-accent-hover: #00c853;
+  --mkt-card: rgba(12, 20, 28, 0.75);
+  --mkt-border: rgba(255, 255, 255, 0.08);
+}
+
+.marketing-theme .glass-card {
+  background: var(--mkt-card);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--mkt-border);
+  border-radius: 1rem;
+}
+
+.marketing-theme .btn-primary {
+  background: var(--mkt-accent);
+  color: #050a0e;
+  font-weight: 700;
+  border-radius: 9999px;
+  box-shadow: 0 0 24px rgba(0, 230, 118, 0.35);
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.marketing-theme .btn-primary:hover:not(:disabled) {
+  background: var(--mkt-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 0 32px rgba(0, 230, 118, 0.45);
+}
+
+.marketing-theme .btn-outline {
+  background: transparent;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.marketing-theme .btn-outline:hover {
+  border-color: rgba(0, 230, 118, 0.5);
+  background: rgba(0, 230, 118, 0.06);
+}
+
+.marketing-theme .input-mkt {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  border-radius: 0.75rem;
+}
+
+.marketing-theme .input-mkt::placeholder {
+  color: #64748b;
+}
+
+.marketing-theme .input-mkt:focus {
+  border-color: rgba(0, 230, 118, 0.6);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 230, 118, 0.15);
 }
