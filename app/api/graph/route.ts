@@ -34,14 +34,17 @@ export async function GET(req: NextRequest) {
                 RETURN f.name AS farmer, s.crop AS crop, s.volume_tons AS volume, d.name AS distributor, b.name AS buyer, b.type AS buyerType
             `);
 
-            const supplyChain = result.records.map(record => ({
-                farmer: record.get("farmer"),
-                crop: record.get("crop"),
-                volumeTons: record.get("volume"),
-                distributor: record.get("distributor"),
-                buyer: record.get("buyer"),
-                buyerType: record.get("buyerType")
-            }));
+            const supplyChain = result.records.map(record => {
+                const vol = record.get("volume");
+                return {
+                    farmer: record.get("farmer"),
+                    crop: record.get("crop"),
+                    volumeTons: vol && vol.toNumber ? vol.toNumber() : Number(vol),
+                    distributor: record.get("distributor"),
+                    buyer: record.get("buyer"),
+                    buyerType: record.get("buyerType")
+                };
+            });
 
             return NextResponse.json({ type: "supply", data: supplyChain });
         }

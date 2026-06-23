@@ -12,6 +12,7 @@ import {
   Settings,
   HelpCircle,
   Leaf,
+  Network,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +20,7 @@ const mainNav = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Tasks", href: "/tasks", icon: ListTodo },
   { name: "Market", href: "/market", icon: Store },
+  { name: "Network", href: "/network", icon: Network },
   { name: "Scan Crops", href: "/scan", icon: ScanLine },
 ];
 

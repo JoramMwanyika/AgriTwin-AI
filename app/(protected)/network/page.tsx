@@ -125,100 +125,123 @@ export default function NetworkPage() {
                         </p>
                     </div>
                 ) : !error && viewMode === "knowledge" ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {data.map((item, idx) => (
-                            <div key={idx} className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col gap-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 bg-emerald-100 rounded-full flex items-center justify-center shrink-0 border border-emerald-200">
-                                        <span className="text-emerald-700 font-bold text-xs uppercase">{item.crop.substring(0,2)}</span>
+                            <div key={idx} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                                <div className="flex items-center gap-4 mb-5">
+                                    <div className="h-12 w-12 bg-emerald-100 rounded-full flex items-center justify-center text-2xl shadow-inner">
+                                        🌱
                                     </div>
                                     <div>
-                                        <p className="text-xs text-slate-500 font-semibold">Crop</p>
-                                        <p className="font-bold text-slate-800">{item.crop}</p>
+                                        <h3 className="font-bold text-lg text-slate-800">{item.crop}</h3>
+                                        <p className="text-[11px] uppercase tracking-wider font-bold text-emerald-600">Known Vulnerability</p>
                                     </div>
                                 </div>
                                 
-                                <div className="flex flex-col items-center">
-                                    <div className="w-0.5 h-6 bg-red-200"></div>
-                                    <div className="text-[10px] bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded-full z-10 my-[-10px] border border-white">
-                                        VULNERABLE_TO
+                                <div className="bg-red-50 rounded-xl p-4 mb-3 border border-red-100">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <AlertTriangle className="h-4 w-4 text-red-600" />
+                                        <p className="font-bold text-red-900 text-sm">Risk: {item.disease}</p>
                                     </div>
-                                    <div className="w-0.5 h-6 bg-red-200"></div>
+                                    <p className="text-xs text-red-700 ml-6 leading-relaxed">
+                                        This <strong>{item.diseaseType.toLowerCase()}</strong> is known to heavily impact {item.crop} yields if not caught early.
+                                    </p>
                                 </div>
 
-                                <div className="bg-red-50 border border-red-100 p-3 rounded-xl flex items-center gap-3">
-                                    <AlertTriangle className="h-5 w-5 text-red-500 shrink-0" />
-                                    <div>
-                                        <p className="font-bold text-red-900">{item.disease}</p>
-                                        <p className="text-[10px] uppercase font-bold text-red-600">{item.diseaseType}</p>
+                                <div className="bg-sky-50 rounded-xl p-4 border border-sky-100">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <ShieldCheck className="h-4 w-4 text-sky-600" />
+                                        <p className="font-bold text-sky-900 text-sm">Solution: {item.treatment}</p>
                                     </div>
-                                </div>
-
-                                <div className="flex flex-col items-center">
-                                    <div className="w-0.5 h-6 bg-sky-200"></div>
-                                    <div className="text-[10px] bg-sky-100 text-sky-800 font-bold px-2 py-0.5 rounded-full z-10 my-[-10px] border border-white">
-                                        TREATED_BY
-                                    </div>
-                                    <div className="w-0.5 h-6 bg-sky-200"></div>
-                                </div>
-
-                                <div className="bg-sky-50 border border-sky-100 p-3 rounded-xl flex items-center gap-3">
-                                    <ShieldCheck className="h-5 w-5 text-sky-500 shrink-0" />
-                                    <div>
-                                        <p className="font-bold text-sky-900">{item.treatment}</p>
-                                        <p className="text-[10px] uppercase font-bold text-sky-600">{item.treatmentMethod}</p>
-                                    </div>
+                                    <p className="text-xs text-sky-700 ml-6 leading-relaxed">
+                                        Recommended <strong>{item.treatmentMethod.toLowerCase()}</strong> intervention to protect the crop.
+                                    </p>
                                 </div>
                             </div>
                         ))}
                     </div>
                 ) : !error && viewMode === "supply" ? (
-                     <div className="grid grid-cols-1 gap-4">
+                     <div className="grid grid-cols-1 gap-6">
                         {data.map((item, idx) => (
-                            <div key={idx} className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row items-center gap-4 md:gap-0">
+                            <div key={idx} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
+                                <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
+                                <div className="flex items-center justify-between mb-8">
+                                    <div>
+                                        <h3 className="font-bold text-lg text-slate-800">Batch Traceability Report</h3>
+                                        <p className="text-xs text-slate-500 mt-1">End-to-end supply chain visibility</p>
+                                    </div>
+                                    <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                                        <ShieldCheck className="h-3 w-3" />
+                                        Verified
+                                    </span>
+                                </div>
                                 
-                                <div className="flex-1 flex flex-col items-center text-center">
-                                    <div className="h-12 w-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mb-2">
-                                        🧑‍🌾
+                                <div className="flex flex-col md:flex-row items-center gap-4 md:gap-0 relative">
+                                    
+                                    {/* Step 1: Farm */}
+                                    <div className="flex-1 flex flex-col items-center text-center relative z-10 w-full md:w-auto">
+                                        <div className="h-16 w-16 bg-amber-100 border-4 border-white shadow-sm text-amber-600 rounded-full flex items-center justify-center mb-3 text-2xl z-10">
+                                            🧑‍🌾
+                                        </div>
+                                        <p className="font-bold text-slate-800 text-base">{item.farmer}</p>
+                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Origin Farm</p>
                                     </div>
-                                    <p className="font-bold text-slate-800">{item.farmer}</p>
-                                    <p className="text-xs text-slate-500 font-semibold">Producer</p>
-                                </div>
 
-                                <div className="flex-1 flex flex-col items-center justify-center px-4">
-                                    <div className="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full mb-1">
-                                        SELLS_TO ({item.volumeTons} Tons {item.crop})
+                                    {/* Arrow */}
+                                    <div className="hidden md:flex flex-1 flex-col items-center justify-center px-2 z-0 relative h-full">
+                                        <div className="absolute top-8 left-0 w-full h-[2px] bg-slate-200 -z-10"></div>
+                                        <div className="text-[11px] font-bold text-slate-600 bg-white border border-slate-200 shadow-sm px-4 py-1.5 rounded-full mb-1 absolute top-5 whitespace-nowrap">
+                                            {item.volumeTons} Tons {item.crop}
+                                        </div>
                                     </div>
-                                    <div className="w-full h-0.5 bg-emerald-200 relative">
-                                        <div className="absolute right-0 top-[-4px] w-0 h-0 border-t-4 border-t-transparent border-l-8 border-l-emerald-200 border-b-4 border-b-transparent"></div>
+
+                                    {/* Mobile Arrow */}
+                                    <div className="md:hidden w-full flex justify-center py-2">
+                                        <div className="text-[10px] font-bold text-slate-600 bg-slate-100 px-3 py-1 rounded-full">
+                                            ↓ {item.volumeTons} Tons {item.crop} ↓
+                                        </div>
+                                    </div>
+
+                                    {/* Step 2: Transport */}
+                                    <div className="flex-1 flex flex-col items-center text-center relative z-10 w-full md:w-auto">
+                                        <div className="h-16 w-16 bg-indigo-100 border-4 border-white shadow-sm text-indigo-600 rounded-full flex items-center justify-center mb-3 z-10">
+                                            <Truck className="h-7 w-7" />
+                                        </div>
+                                        <p className="font-bold text-slate-800 text-base">{item.distributor}</p>
+                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Logistics</p>
+                                    </div>
+
+                                    {/* Arrow */}
+                                    <div className="hidden md:flex flex-1 flex-col items-center justify-center px-2 z-0 relative h-full">
+                                        <div className="absolute top-8 left-0 w-full h-[2px] bg-slate-200 -z-10"></div>
+                                        <div className="text-[11px] font-bold text-slate-600 bg-white border border-slate-200 shadow-sm px-4 py-1.5 rounded-full mb-1 absolute top-5 whitespace-nowrap">
+                                            Delivered To
+                                        </div>
+                                    </div>
+
+                                    {/* Mobile Arrow */}
+                                    <div className="md:hidden w-full flex justify-center py-2">
+                                        <div className="text-[10px] font-bold text-slate-600 bg-slate-100 px-3 py-1 rounded-full">
+                                            ↓ Delivered To ↓
+                                        </div>
+                                    </div>
+
+                                    {/* Step 3: Retail */}
+                                    <div className="flex-1 flex flex-col items-center text-center relative z-10 w-full md:w-auto">
+                                        <div className="h-16 w-16 bg-violet-100 border-4 border-white shadow-sm text-violet-600 rounded-full flex items-center justify-center mb-3 z-10">
+                                            <ShoppingCart className="h-7 w-7" />
+                                        </div>
+                                        <p className="font-bold text-slate-800 text-base">{item.buyer}</p>
+                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">{item.buyerType}</p>
                                     </div>
                                 </div>
-
-                                <div className="flex-1 flex flex-col items-center text-center">
-                                    <div className="h-12 w-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mb-2">
-                                        <Truck className="h-5 w-5" />
-                                    </div>
-                                    <p className="font-bold text-slate-800">{item.distributor}</p>
-                                    <p className="text-xs text-slate-500 font-semibold">Distributor</p>
+                                
+                                <div className="mt-8 bg-slate-50 rounded-xl p-4 text-xs text-slate-600 flex items-start gap-3 border border-slate-100">
+                                    <ShieldCheck className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
+                                    <p className="leading-relaxed text-sm">
+                                        <strong>Traceability Demo:</strong> If contamination is reported at <strong>{item.farmer}</strong>, the system instantly traces the exact path to flag <strong>{item.buyer}</strong> to pull the affected <strong>{item.volumeTons} tons of {item.crop}</strong> from their shelves.
+                                    </p>
                                 </div>
-
-                                <div className="flex-1 flex flex-col items-center justify-center px-4">
-                                    <div className="text-[10px] font-bold text-sky-600 bg-sky-50 border border-sky-200 px-3 py-1 rounded-full mb-1">
-                                        SUPPLIES_TO
-                                    </div>
-                                    <div className="w-full h-0.5 bg-sky-200 relative">
-                                        <div className="absolute right-0 top-[-4px] w-0 h-0 border-t-4 border-t-transparent border-l-8 border-l-sky-200 border-b-4 border-b-transparent"></div>
-                                    </div>
-                                </div>
-
-                                <div className="flex-1 flex flex-col items-center text-center">
-                                    <div className="h-12 w-12 bg-violet-100 text-violet-600 rounded-full flex items-center justify-center mb-2">
-                                        <ShoppingCart className="h-5 w-5" />
-                                    </div>
-                                    <p className="font-bold text-slate-800">{item.buyer}</p>
-                                    <p className="text-xs text-slate-500 font-semibold">{item.buyerType}</p>
-                                </div>
-
                             </div>
                         ))}
                     </div>

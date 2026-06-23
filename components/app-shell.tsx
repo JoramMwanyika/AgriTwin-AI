@@ -13,12 +13,14 @@ import {
   ListTodo,
   Store,
   ScanLine,
+  Network,
 } from "lucide-react";
 
 const mobileNav = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Tasks", href: "/tasks", icon: ListTodo },
   { name: "Market", href: "/market", icon: Store },
+  { name: "Network", href: "/network", icon: Network },
   { name: "Scan", href: "/scan", icon: ScanLine },
 ];
 
