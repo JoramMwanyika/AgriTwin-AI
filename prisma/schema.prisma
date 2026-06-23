@@ -51,6 +51,8 @@ model Farm {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   blocks    Block[]
+  employees Employee[]
+  tasks     Task[]
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -68,6 +70,7 @@ model Block {
   sensors     Sensor[]
   readings    SensorReading[]
   recommendations DailyRecommendation[]
+  tasks       Task[]
 }
 
 model Sensor {
@@ -144,7 +147,7 @@ model DailyRecommendation {
   content     String
   isCompleted Boolean  @default(false)
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime? @updatedAt
 
   block       Block    @relation(fields: [blockId], references: [id], onDelete: Cascade)
 }
@@ -181,4 +184,35 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model Employee {
+  id          String   @id @default(cuid())
+  farmId      String
+  name        String
+  role        String
+  phoneNumber String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  farm        Farm     @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  tasks       Task[]
+}
+
+model Task {
+  id          String    @id @default(cuid())
+  farmId      String
+  blockId     String?
+  employeeId  String?
+  title       String
+  description String?
+  status      String    @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED
+  priority    String    @default("MEDIUM")  // LOW, MEDIUM, HIGH
+  dueDate     DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  farm        Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  block       Block?    @relation(fields: [blockId], references: [id], onDelete: SetNull)
+  assignee    Employee? @relation(fields: [employeeId], references: [id], onDelete: SetNull)
 }
