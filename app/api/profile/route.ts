@@ -40,7 +40,8 @@ export async function GET() {
             role: displayRole,
             location: location,
             isPremium: !!isPremium,
-            marketExpiry: user.marketAccessExpiry
+            marketExpiry: user.marketAccessExpiry,
+            notificationsEnabled: user.notificationsEnabled ?? true
         });
 
     } catch (error) {
@@ -56,26 +57,33 @@ export async function PUT(req: Request) {
     }
 
     try {
-        const { name, location } = await req.json();
+        const body = await req.json();
+        
+        // Build data object dynamically to allow partial updates
+        const dataToUpdate: any = {};
+        if (body.name !== undefined) dataToUpdate.name = body.name;
+        if (body.notificationsEnabled !== undefined) dataToUpdate.notificationsEnabled = body.notificationsEnabled;
 
-        // Update User Name
+        // Update User
         const updatedUser = await db.user.update({
             where: { id: session.user.id },
-            data: { name }
+            data: dataToUpdate
         });
 
-        // Update Farm Location (if exists)
-        // This is a bit simplified, ideally we'd manage farms separately but for profile update:
-        const farm = await db.farm.findFirst({ where: { userId: session.user.id } });
-        if (farm) {
-            await db.farm.update({
-                where: { id: farm.id },
-                data: { location }
-            });
+        // Update Farm Location (if location provided)
+        if (body.location !== undefined) {
+            const farm = await db.farm.findFirst({ where: { userId: session.user.id } });
+            if (farm) {
+                await db.farm.update({
+                    where: { id: farm.id },
+                    data: { location: body.location }
+                });
+            }
         }
 
         return NextResponse.json({ success: true, user: updatedUser });
     } catch (error) {
+        console.error("Profile Update Error:", error);
         return NextResponse.json({ error: "Failed to update" }, { status: 500 });
     }
 }

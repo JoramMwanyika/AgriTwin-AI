@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { TrendingUp, TrendingDown, Store, ShoppingCart, MapPin, User, Activity } from "lucide-react";
+import { TrendingUp, TrendingDown, Store, ShoppingCart, MapPin, User, Activity, Network, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CreateListingModal } from "@/components/create-listing-modal";
+import { VendorChatModal } from "@/components/vendor-chat-modal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import Image from "next/image";
@@ -29,6 +30,11 @@ export default function MarketPage() {
     const [listings, setListings] = useState<any[]>([]);
     const [loadingListings, setLoadingListings] = useState(false);
     
+    // Vendor Network State
+    const [vendors, setVendors] = useState<any[]>([]);
+    const [loadingVendors, setLoadingVendors] = useState(false);
+    const [chatVendor, setChatVendor] = useState<string | null>(null);
+
     // Live Market State
     const [marketData, setMarketData] = useState<MarketData[]>([]);
     const [priceHistory, setPriceHistory] = useState<PriceHistory>({});
@@ -77,9 +83,24 @@ export default function MarketPage() {
         }
     };
 
+    const fetchVendors = async () => {
+        setLoadingVendors(true);
+        try {
+            const res = await fetch("/api/market/vendors");
+            if (res.ok) {
+                setVendors(await res.json());
+            }
+        } catch (error) {
+            console.error("Failed to load vendors", error);
+        } finally {
+            setLoadingVendors(false);
+        }
+    };
+
     useEffect(() => {
         fetchListings();
         fetchLivePrices(); // Initial fetch
+        fetchVendors();
         
         // Poll every 3 seconds for live ticker effect
         const interval = setInterval(fetchLivePrices, 3000);
@@ -95,7 +116,7 @@ export default function MarketPage() {
                 />
 
                 <Tabs defaultValue="prices" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 bg-white/40 backdrop-blur-md border border-slate-200/50 p-1 rounded-2xl shadow-sm">
+                    <TabsList className="grid w-full grid-cols-3 bg-white/40 backdrop-blur-md border border-slate-200/50 p-1 rounded-2xl shadow-sm">
                         <TabsTrigger value="prices" className="data-[state=active]:bg-white data-[state=active]:text-emerald-700 text-slate-500 rounded-xl py-3 font-bold shadow-sm transition-all">
                             <Activity className="w-4 h-4 mr-2" />
                             Live Prices
@@ -103,6 +124,10 @@ export default function MarketPage() {
                         <TabsTrigger value="trading" className="data-[state=active]:bg-white data-[state=active]:text-emerald-700 text-slate-500 rounded-xl py-3 font-bold shadow-sm transition-all">
                             <Store className="w-4 h-4 mr-2" />
                             Farmer Trading
+                        </TabsTrigger>
+                        <TabsTrigger value="network" className="data-[state=active]:bg-white data-[state=active]:text-emerald-700 text-slate-500 rounded-xl py-3 font-bold shadow-sm transition-all">
+                            <Network className="w-4 h-4 mr-2" />
+                            Vendor Network
                         </TabsTrigger>
                     </TabsList>
 
@@ -272,6 +297,71 @@ export default function MarketPage() {
                             </div>
                         )}
                     </TabsContent>
+
+                    {/* === TAB 3: VENDOR NETWORK === */}
+                    <TabsContent value="network" className="space-y-6 mt-6">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-indigo-900 text-white p-8 rounded-[24px] shadow-lg relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500 rounded-full blur-3xl opacity-20 -mr-10 -mt-10"></div>
+                            <div className="relative z-10 mb-6 md:mb-0">
+                                <h3 className="font-black text-2xl mb-2 flex items-center">
+                                    <Network className="mr-2" />
+                                    Vendor Match Network
+                                </h3>
+                                <p className="text-indigo-100/80 font-medium max-w-md">Powered by our Neo4j Knowledge Graph. Find buyers and distributors physically close to you or connected in the supply chain.</p>
+                            </div>
+                        </div>
+
+                        {loadingVendors ? (
+                            <div className="text-center py-20 text-slate-500 font-medium">
+                                <div className="h-8 w-8 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mx-auto mb-4" />
+                                Searching Neo4j Database...
+                            </div>
+                        ) : vendors.length === 0 ? (
+                            <div className="text-center py-24 bg-white/60 backdrop-blur-sm rounded-[24px] border border-slate-200/60 border-dashed shadow-sm">
+                                <div className="bg-slate-100 h-20 w-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Network className="w-10 h-10 text-slate-400" />
+                                </div>
+                                <h3 className="text-slate-800 font-bold text-xl mb-2">No vendors found</h3>
+                                <p className="text-slate-500 mb-6 font-medium">Make sure the Neo4j database is seeded.</p>
+                            </div>
+                        ) : (
+                            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                                {vendors.map((vendor, idx) => (
+                                    <div key={idx} className="bg-white rounded-[24px] overflow-hidden border border-slate-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all flex flex-col p-6">
+                                        <div className="flex items-start justify-between mb-4">
+                                            <div className="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100 shadow-inner">
+                                                <Store className="w-6 h-6" />
+                                            </div>
+                                            <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${vendor.type === 'Buyer' ? 'bg-orange-50 text-orange-600 border-orange-100' : 'bg-blue-50 text-blue-600 border-blue-100'}`}>
+                                                {vendor.type}
+                                            </span>
+                                        </div>
+                                        
+                                        <h3 className="text-xl font-bold text-slate-800 mb-1">{vendor.name}</h3>
+                                        
+                                        <div className="space-y-2 mt-4">
+                                            <div className="flex items-center text-slate-500 font-medium text-sm">
+                                                <MapPin className="w-4 h-4 mr-2 text-slate-400" />
+                                                Region: <strong className="ml-1 text-slate-700">{vendor.location}</strong>
+                                            </div>
+                                            <div className="flex items-center text-slate-500 font-medium text-sm">
+                                                <Activity className="w-4 h-4 mr-2 text-slate-400" />
+                                                Scale: <strong className="ml-1 text-slate-700">{vendor.scale}</strong>
+                                            </div>
+                                        </div>
+                                        
+                                        <Button 
+                                            onClick={() => setChatVendor(vendor.name)}
+                                            className="w-full mt-6 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold flex items-center justify-center"
+                                        >
+                                            <MessageSquare className="w-4 h-4 mr-2" />
+                                            Chat with Vendor
+                                        </Button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </TabsContent>
                 </Tabs>
             </div>
 
@@ -279,6 +369,12 @@ export default function MarketPage() {
                 isOpen={isListingModalOpen}
                 onClose={() => setIsListingModalOpen(false)}
                 onSuccess={fetchListings}
+            />
+
+            <VendorChatModal 
+                isOpen={!!chatVendor}
+                onClose={() => setChatVendor(null)}
+                vendorName={chatVendor || ""}
             />
         </AppShell>
     );

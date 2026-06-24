@@ -5,6 +5,7 @@ import { AppShell } from "@/components/app-shell"
 import { AppPageHeader } from "@/components/app-page-header"
 import { Card, CardContent } from "@/components/ui/card"
 import { User, Globe, ChevronRight, LogOut, Settings, Bell, PenLine, Shield, HelpCircle } from "lucide-react"
+import { signOut } from "next-auth/react"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
@@ -39,7 +40,8 @@ export default function ProfilePage() {
     name: "",
     location: "Loading...",
     role: "Farmer",
-    email: ""
+    email: "",
+    notificationsEnabled: true
   })
   const [tempProfile, setTempProfile] = useState(profile)
   const [loading, setLoading] = useState(true)
@@ -57,6 +59,7 @@ export default function ProfilePage() {
         const data = await res.json();
         setProfile(data);
         setTempProfile(data);
+        setNotifications(data.notificationsEnabled ?? true);
       }
     } catch (e) {
       toast.error("Failed to load profile");
@@ -94,6 +97,25 @@ export default function ProfilePage() {
     const lang = LANGUAGES.find((l) => l.code === code || l.code === normalized)
     setIsLanguageOpen(false)
     toast.success(`Language changed to ${lang?.name}`)
+  }
+
+  const handleNotificationToggle = async (checked: boolean) => {
+    setNotifications(checked)
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notificationsEnabled: checked })
+      });
+      if (res.ok) {
+        toast.success(checked ? "Notifications enabled" : "Notifications disabled")
+      } else {
+        throw new Error("Failed");
+      }
+    } catch (e) {
+      setNotifications(!checked) // Revert on failure
+      toast.error("Failed to update notification settings");
+    }
   }
 
   return (
@@ -244,10 +266,7 @@ export default function ProfilePage() {
                   </div>
                   <Switch
                     checked={notifications}
-                    onCheckedChange={(checked) => {
-                      setNotifications(checked)
-                      toast.success(checked ? "Notifications enabled" : "Notifications disabled")
-                    }}
+                    onCheckedChange={handleNotificationToggle}
                     className="data-[state=checked]:bg-[#14532d]"
                   />
                 </div>
@@ -322,7 +341,7 @@ export default function ProfilePage() {
           <Button
             variant="outline"
             className="w-full gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 bg-white border border-red-200 shadow-sm h-12 text-base font-medium rounded-xl"
-            onClick={() => toast.info("Sign out functionality coming soon")}
+            onClick={() => signOut({ callbackUrl: '/login' })}
           >
             <LogOut className="h-5 w-5" /> Sign Out
           </Button>

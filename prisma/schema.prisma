@@ -25,6 +25,8 @@ model User {
   listings           MarketListing[]
   payments           Payment[]
   Session            Session[]
+  vendorMessages     VendorMessage[]
+  notificationsEnabled Boolean       @default(true)
 }
 
 model Payment {
@@ -219,4 +221,14 @@ model Task {
   farm        Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
   block       Block?    @relation(fields: [blockId], references: [id], onDelete: SetNull)
   assignee    Employee? @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+}
+
+model VendorMessage {
+  id          String   @id @default(cuid())
+  userId      String
+  vendorName  String
+  content     String
+  isFromUser  Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
