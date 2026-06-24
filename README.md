@@ -1,40 +1,55 @@
 # 🌾 AgriTwin: AgriFin Digital Twin & Graph-Enabled Farming Assistant
 
-**AgriTwin** is an interactive digital farm twin platform and voice-enabled farming assistant designed to empower African smallholder farmers with data-driven agronomic insights while providing financial institutions (AgriFin) with verifiable creditworthiness indicators.
+**AgriTwin** is an interactive digital farm twin platform and voice-enabled farming assistant designed to empower African farmers—from smallholders to large-scale commercial operators—with data-driven agronomic insights while providing financial institutions (AgriFin) with verifiable creditworthiness indicators.
 
 ---
 
-## 📌 1. Problem Understanding & Target User
-* **Target User**: African smallholder farmers managing diversified plots, and AgriFin institutions looking to de-risk agricultural lending.
-* **The Pain Points**:
-  1. **Agronomic Guesswork**: Farmers manage their fields uniformly due to a lack of localized expertise, leading to soil degradation, inefficient irrigation, and crop failures.
-  2. **Financial Exclusion**: Traditional banks and micro-lenders lack visibility into farm health, historical yield potential, and risk indicators. Without a digital audit trail, smallholders are locked out of credit and insurance systems.
+## 📌 1. The Problem: Inefficiencies and Farming in the Dark
+Across Africa, millions of farmers—from smallholders to large-scale commercial operators—face critical inefficiencies. Smallholders often operate in the dark, relying on traditional guesswork rather than localized agronomic intelligence, leading to preventable crop failures and soil degradation. Meanwhile, large-scale farmers struggle with managing vast, complex operations without unified, real-time telemetry and data.
 
-## 💡 2. Proposed Solution
-AgriTwin resolves this with a dual-purpose digital system:
-* **3D Digital Farm Twin**: A visual landscape built with **React Three Fiber** that maps real-time soil health, moisture levels, crop types, and automatically scales and loads photorealistic 3D `.glb` assets.
-* **AI Advisor (GitHub Models / Ollama)**: Local or cloud-based LLM integration providing real-time, context-aware farming recommendations based on sensor telemetry.
-* **Multilingual Audio/Visual Integration**: Leveraging **Azure AI** (Speech, Translator, Vision) to allow farmers to communicate in their native dialects (e.g., Swahili) and analyze crop health via image scanning.
-* **AgriFin Audit Trail**: Farm logs, recommendation compliance, and sensor history are compiled to generate a "farm health score" for micro-lenders.
+But the challenges extend beyond the farm gate. **Financial institutions (AgriFin lenders)** view smallholders as "high risk" because there is no visibility into their operations or market connections, locking them out of credit and insurance systems. For large-scale farms, securing transparent supply chains and optimizing market contracts remains a logistical nightmare. When harvest time comes, farmers of all scales often struggle to find reliable, verified buyers, leading to post-harvest losses and exploitation by middlemen.
+
+## 💡 2. Our Solution: Illuminating Agriculture with AI & Graphs
+**AgriTwin** bridges the gap between traditional farming and modern data science by creating a verifiable, interconnected ecosystem:
+
+* **3D Digital Farm Twin**: We pull farmers out of the dark by giving them a visual, interactive 3D replica of their farm (built with React Three Fiber) that maps real-time soil moisture, crop health, and environmental telemetry.
+* **Graph-Powered AI Advisor**: Our AI doesn't just guess; it reasons. By leveraging **Neo4j**, we've built a **Crop Knowledge Graph** that maps the relationships between specific crops, their vulnerabilities (diseases/pests), and targeted treatments. The AI uses this graph to deliver hyper-contextual, verified agronomic advice.
+* **Multilingual Inclusivity**: Using Azure AI (Speech, Translator, Vision), farmers interact with the app via voice and images in their native languages (e.g., Swahili), removing literacy barriers.
+* **De-Risking via Market Matching & Supply Chain Graphs**: This is where agricultural finance changes entirely. We use **Neo4j** to build a **Supply Chain Graph** that mathematically maps farmers directly to distributors and verified buyers based on their crop type, scale, and volume. By securing off-take agreements and **market matching** before the crop is even harvested, we provide financial institutions with a verifiable "guaranteed revenue" metric. Lenders no longer need traditional collateral—the transparent farm audit trail combined with graph-matched buyer contracts serves as the ultimate de-risking tool, unlocking micro-loans and insurance.
 
 ## 🛠️ 3. Technology Stack & Architecture
 * **Frontend**: **Next.js 16 (TypeScript)** + **Tailwind CSS**.
-* **3D View**: **React Three Fiber (Three.js)** for dynamic, interactive spatial visualization of crops and infrastructure.
-* **Database**: **PostgreSQL** (via Prisma) for transactional data.
+* **3D Visualization**: **React Three Fiber (Three.js)** for dynamic spatial representation of farm assets.
+* **Relational Database**: **PostgreSQL** (via Prisma) for transactional user data and telemetry logs.
+* **Graph Database (Neo4j)**: Powers the **Crop Knowledge Graph** (Crop -> Disease -> Treatment mapping) and the **Supply Chain Graph** (Market matching between Farmers -> Distributors -> Buyers).
 * **AI & NLP**: **GitHub Models** (GPT-4o), **Ollama** (Local Inference), and **Azure Cognitive Services** (Translation, Speech, Vision).
-* **Python Backend**: **FastAPI** layer for specialized local processing.
+* **Python Backend**: **FastAPI** layer for specialized processing and AI orchestrations.
 
 ---
 
-## 🚀 4. Setup Guidelines
+## 🌟 4. Core Features Explained
 
-### 4.1 Prerequisites
+1. **AI Advisor (`/advisor`)**: A multilingual, AI-powered farming assistant providing agronomic advice tailored to the farmer's specific needs, accessible via text or voice (e.g., Swahili).
+2. **3D Farm Digital Twin (`/farm`)**: A highly interactive 3D map visualizing the farm layout, infrastructure, crop types, and live sensor data like soil moisture levels.
+3. **Crop Disease Scanning (`/scan`)**: A visual diagnostic tool leveraging Azure Vision AI to identify crop diseases and pests directly from user-uploaded images.
+4. **Market Hub (`/market`)**: Provides real-time agricultural market prices, trends, and facilitates connections to buyers, ensuring farmers get the best value for their produce.
+5. **Crop Calendar (`/calendar`)**: A visual timeline for agricultural planning, allowing farmers to schedule planting, maintenance, and harvesting across seasons.
+6. **Task Management (`/tasks`)**: A specialized tracker to log, assign, and monitor daily farm activities and operational progress.
+7. **Weather & Agronomic Alerts (`/alerts`)**: Context-aware notifications that warn farmers about upcoming extreme weather events or agronomic risks.
+8. **Team & Worker Management (`/team`)**: Tools to manage farm workers, track roles, and oversee labor assignments across different farm blocks.
+9. **User Profile & Settings (`/profile`)**: Manage personal settings, notification preferences, and application localization (multi-language support).
+
+---
+
+## 🚀 5. Setup Guidelines
+
+### 5.1 Prerequisites
 - Node.js (v18+)
 - Python (3.10+)
 - PostgreSQL Database
 - [Ollama](https://ollama.com/) (Optional, for local AI)
 
-### 4.2 Environment Configuration
+### 5.2 Environment Configuration
 Duplicate the `.env.example` file and rename it to `.env.local`:
 ```bash
 cp .env.example .env.local
@@ -47,7 +62,7 @@ Fill in your configuration variables in `.env.local`:
 - **GitHub Models**: Add your GitHub Personal Access Token (`GITHUB_TOKEN`) to use free inference models like `gpt-4o`.
 - **Local AI (Ollama)**: Ensure Ollama is running and specify the model (e.g., `qwen2.5:0.5b`).
 
-### 4.3 3D Model Assets Setup
+### 5.3 3D Model Assets Setup
 AgriTwin features a completely dynamic 3D rendering engine. To achieve photorealism, download free `.glb` models (e.g., from [Poly Pizza](https://poly.pizza/) or [Kenney.nl](https://kenney.nl/)) and place them into the `public/models` directory:
 
 ```text
@@ -63,7 +78,7 @@ public/models/
 ```
 *Note: If a model file is missing, the engine will gracefully fall back to generic 3D geometry without crashing!*
 
-### 4.4 Running the Application
+### 5.4 Running the Application
 
 **1. Install Frontend Dependencies**
 ```bash
