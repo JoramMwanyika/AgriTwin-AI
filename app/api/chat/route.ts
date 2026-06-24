@@ -12,8 +12,14 @@ import {
 } from "@/lib/languages"
 import { fetchOllama } from "@/lib/ollama"
 import { isAzureTranslatorConfigured, translateText } from "@/lib/azure-translate"
+import OpenAI from 'openai';
 
 const OLLAMA_URL = process.env.OLLAMA_URL || "http://localhost:11434/v1/chat/completions"
+
+const featherless = new OpenAI({
+  baseURL: 'https://api.featherless.ai/v1',
+  apiKey: process.env.FEATHERLESS_API_KEY || "dummy_key_for_build", 
+});
 
 export async function POST(req: NextRequest) {
   let language = "en"
@@ -133,43 +139,26 @@ export async function POST(req: NextRequest) {
     let aiMessageContent = "";
     let azureSuccess = false;
 
-    const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-    const GITHUB_MODEL = process.env.GITHUB_MODEL || "gpt-4o";
-    let GITHUB_ENDPOINT = process.env.GITHUB_MODELS_ENDPOINT || "https://models.inference.ai.azure.com/chat/completions";
-    if (!GITHUB_ENDPOINT.endsWith("/chat/completions")) {
-      GITHUB_ENDPOINT = `${GITHUB_ENDPOINT.replace(/\/$/, "")}/chat/completions`;
-    }
+    const FEATHERLESS_API_KEY = process.env.FEATHERLESS_API_KEY;
 
-    if (GITHUB_TOKEN) {
+    if (FEATHERLESS_API_KEY) {
       try {
-        console.log(`[v0] Trying GitHub Models Chat with ${GITHUB_MODEL}...`);
+        console.log(`[v0] Trying Featherless API Chat...`);
         
-        const azureResponse = await fetch(GITHUB_ENDPOINT, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${GITHUB_TOKEN}`,
-          },
-          body: JSON.stringify({
-            model: GITHUB_MODEL,
-            messages: apiMessages,
-            temperature: language === "en" ? 0.5 : 0.35,
-            max_tokens: 1500,
-          }),
+        const completion = await featherless.chat.completions.create({
+          model: "meta-llama/Meta-Llama-3-70B-Instruct",
+          messages: apiMessages as any, // Bypass strict type checking for basic array
+          temperature: language === "en" ? 0.5 : 0.35,
+          max_tokens: 1500,
         });
 
-        if (azureResponse.ok) {
-          const azureData = await azureResponse.json();
-          aiMessageContent = azureData.choices?.[0]?.message?.content || "";
-          if (aiMessageContent) {
-            azureSuccess = true;
-            console.log("[v0] GitHub Models Success");
-          }
-        } else {
-          console.warn("[v0] GitHub Models Failed with status:", azureResponse.status, await azureResponse.text());
+        aiMessageContent = completion.choices[0]?.message?.content || "";
+        if (aiMessageContent) {
+          azureSuccess = true;
+          console.log("[v0] Featherless API Success");
         }
       } catch (err) {
-        console.warn("[v0] GitHub Models Request Error:", err);
+        console.warn("[v0] Featherless API Request Error:", err);
       }
     }
 

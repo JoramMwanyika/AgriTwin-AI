@@ -13,8 +13,8 @@ But the challenges extend beyond the farm gate. **Financial institutions (AgriFi
 **AgriTwin** bridges the gap between traditional farming and modern data science by creating a verifiable, interconnected ecosystem:
 
 * **3D Digital Farm Twin**: We pull farmers out of the dark by giving them a visual, interactive 3D replica of their farm (built with React Three Fiber) that maps real-time soil moisture, crop health, and environmental telemetry.
-* **Graph-Powered AI Advisor**: Our AI doesn't just guess; it reasons. By leveraging **Neo4j**, we've built a **Crop Knowledge Graph** that maps the relationships between specific crops, their vulnerabilities (diseases/pests), and targeted treatments. The AI uses this graph to deliver hyper-contextual, verified agronomic advice.
-* **Multilingual Inclusivity**: Using Azure AI (Speech, Translator, Vision), farmers interact with the app via voice and images in their native languages (e.g., Swahili), removing literacy barriers.
+* **Graph-Powered AI Advisor**: Our AI doesn't just guess; it reasons. By leveraging **Neo4j**, we've built a **Crop Knowledge Graph** that maps the relationships between specific crops, their vulnerabilities (diseases/pests), and targeted treatments. Powered by the **Featherless API** for high-performance open-source LLMs, the AI uses this graph to deliver hyper-contextual, verified agronomic advice.
+* **Multilingual Inclusivity**: Using Azure AI (Speech, Translator) alongside powerful Vision models from **Featherless**, farmers interact with the app via voice and images in their native languages (e.g., Swahili), removing literacy barriers.
 * **De-Risking via Market Matching & Supply Chain Graphs**: This is where agricultural finance changes entirely. We use **Neo4j** to build a **Supply Chain Graph** that mathematically maps farmers directly to distributors and verified buyers based on their crop type, scale, and volume. By securing off-take agreements and **market matching** before the crop is even harvested, we provide financial institutions with a verifiable "guaranteed revenue" metric. Lenders no longer need traditional collateral—the transparent farm audit trail combined with graph-matched buyer contracts serves as the ultimate de-risking tool, unlocking micro-loans and insurance.
 
 ## 🛠️ 3. Technology Stack & Architecture
@@ -22,16 +22,16 @@ But the challenges extend beyond the farm gate. **Financial institutions (AgriFi
 * **3D Visualization**: **React Three Fiber (Three.js)** for dynamic spatial representation of farm assets.
 * **Relational Database**: **PostgreSQL** (via Prisma) for transactional user data and telemetry logs.
 * **Graph Database (Neo4j)**: Powers the **Crop Knowledge Graph** (Crop -> Disease -> Treatment mapping) and the **Supply Chain Graph** (Market matching between Farmers -> Distributors -> Buyers).
-* **AI & NLP**: **GitHub Models** (GPT-4o), **Ollama** (Local Inference), and **Azure Cognitive Services** (Translation, Speech, Vision).
+* **AI & NLP**: **Featherless API** (Open-source LLMs & VLMs), **Ollama** (Local Inference), and **Azure Cognitive Services** (Translation, Speech).
 * **Python Backend**: **FastAPI** layer for specialized processing and AI orchestrations.
 
 ---
 
 ## 🌟 4. Core Features Explained
 
-1. **AI Advisor (`/advisor`)**: A multilingual, AI-powered farming assistant providing agronomic advice tailored to the farmer's specific needs, accessible via text or voice (e.g., Swahili).
+1. **AI Advisor (`/advisor`)**: A multilingual, AI-powered farming assistant driven by **Featherless API** (e.g., Llama-3 70B), providing agronomic advice tailored to the farmer's specific needs, accessible via text or voice.
 2. **3D Farm Digital Twin (`/farm`)**: A highly interactive 3D map visualizing the farm layout, infrastructure, crop types, and live sensor data like soil moisture levels.
-3. **Crop Disease Scanning (`/scan`)**: A visual diagnostic tool leveraging Azure Vision AI to identify crop diseases and pests directly from user-uploaded images.
+3. **Crop Disease Scanning (`/scan`)**: A visual diagnostic tool leveraging Vision-Language Models via the Featherless API to identify crop diseases and pests directly from user-uploaded images.
 4. **Market Hub (`/market`)**: Provides real-time agricultural market prices, trends, and facilitates connections to buyers, ensuring farmers get the best value for their produce.
 5. **Crop Calendar (`/calendar`)**: A visual timeline for agricultural planning, allowing farmers to schedule planting, maintenance, and harvesting across seasons.
 6. **Task Management (`/tasks`)**: A specialized tracker to log, assign, and monitor daily farm activities and operational progress.
@@ -58,8 +58,8 @@ cp .env.example .env.local
 Fill in your configuration variables in `.env.local`:
 - **Database**: Add your PostgreSQL `DATABASE_URL`.
 - **Authentication**: Generate a random string for `AUTH_SECRET`.
-- **Azure AI Services**: Add your keys/endpoints for Azure Speech, Translator, and Vision.
-- **GitHub Models**: Add your GitHub Personal Access Token (`GITHUB_TOKEN`) to use free inference models like `gpt-4o`.
+- **Azure AI Services**: Add your keys/endpoints for Azure Speech and Translator.
+- **Featherless API**: Add your `FEATHERLESS_API_KEY` to run powerful open-source models (like Llama-3 and Qwen-VL).
 - **Local AI (Ollama)**: Ensure Ollama is running and specify the model (e.g., `qwen2.5:0.5b`).
 
 ### 5.3 3D Model Assets Setup

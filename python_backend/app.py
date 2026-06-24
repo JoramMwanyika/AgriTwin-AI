@@ -7,8 +7,15 @@ import uvicorn
 import asyncio
 import random
 import json
+import base64
+from openai import OpenAI
 
 app = FastAPI()
+
+client = OpenAI(
+    base_url="https://api.featherless.ai/v1",
+    api_key=os.environ.get("FEATHERLESS_API_KEY")
+)
 
 # Allow Next.js frontend to call this API
 app.add_middleware(
@@ -152,5 +159,29 @@ async def transcribe(audio: UploadFile = File(...), language: str = Form("en")):
     finally:
         os.remove(temp_audio_path)
 
+@app.post("/api/scan")
+async def scan_crop(file: UploadFile = File(...)):
+    contents = await file.read()
+    base64_image = base64.b64encode(contents).decode('utf-8')
+    
+    try:
+        response = client.chat.completions.create(
+            model="Qwen/Qwen-VL-Chat", 
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "Identify any diseases on this crop leaf and recommend treatments."},
+                        {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}}
+                    ]
+                }
+            ]
+        )
+        return {"diagnosis": response.choices[0].message.content}
+    except Exception as e:
+        print(f"Featherless VLM Error: {e}")
+        return {"error": "Failed to analyze image", "details": str(e)}
+
 if __name__ == "__main__":
+
     uvicorn.run(app, host="0.0.0.0", port=8000)
