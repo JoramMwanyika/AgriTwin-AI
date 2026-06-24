@@ -341,7 +341,7 @@ export default function ProfilePage() {
           <Button
             variant="outline"
             className="w-full gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 bg-white border border-red-200 shadow-sm h-12 text-base font-medium rounded-xl"
-            onClick={() => signOut({ callbackUrl: '/' })}
+            onClick={() => signOut({ callbackUrl: typeof window !== 'undefined' ? window.location.origin : '/' })}
           >
             <LogOut className="h-5 w-5" /> Sign Out
           </Button>
