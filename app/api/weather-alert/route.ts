@@ -1,17 +1,22 @@
 import { type NextRequest, NextResponse } from "next/server";
 import OpenAI from 'openai';
 
-const featherless = new OpenAI({
-  baseURL: 'https://api.featherless.ai/v1',
-  apiKey: process.env.FEATHERLESS_API_KEY || "dummy_key_for_build", 
-});
-
 export async function POST(req: NextRequest) {
   try {
+    const FEATHERLESS_API_KEY = process.env.FEATHERLESS_API_KEY;
+    if (!FEATHERLESS_API_KEY) {
+      return NextResponse.json({ message: "Unable to analyze weather data at this time." });
+    }
+
+    const runtimeFeatherless = new OpenAI({
+      baseURL: 'https://api.featherless.ai/v1',
+      apiKey: FEATHERLESS_API_KEY, 
+    });
+
     const body = await req.json();
     const { weatherData, farmContext } = body;
 
-    const completion = await featherless.chat.completions.create({
+    const completion = await runtimeFeatherless.chat.completions.create({
       model: "Qwen/Qwen2.5-72B-Instruct",
       messages: [
         { role: "system", content: "You turn raw weather data into a short 2-sentence actionable farming alert based on the farm context. Return only the message text." },

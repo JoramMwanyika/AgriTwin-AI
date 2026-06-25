@@ -16,10 +16,7 @@ import OpenAI from 'openai';
 
 const OLLAMA_URL = process.env.OLLAMA_URL || "http://localhost:11434/v1/chat/completions"
 
-const featherless = new OpenAI({
-  baseURL: 'https://api.featherless.ai/v1',
-  apiKey: process.env.FEATHERLESS_API_KEY || "dummy_key_for_build", 
-});
+
 
 export async function POST(req: NextRequest) {
   let language = "en"
@@ -145,7 +142,12 @@ export async function POST(req: NextRequest) {
       try {
         console.log(`[v0] Trying Featherless API Chat...`);
         
-        const completion = await featherless.chat.completions.create({
+        const runtimeFeatherless = new OpenAI({
+          baseURL: 'https://api.featherless.ai/v1',
+          apiKey: FEATHERLESS_API_KEY, 
+        });
+
+        const completion = await runtimeFeatherless.chat.completions.create({
           model: "Qwen/Qwen2.5-72B-Instruct",
           messages: apiMessages as any, // Bypass strict type checking for basic array
           temperature: language === "en" ? 0.5 : 0.35,
