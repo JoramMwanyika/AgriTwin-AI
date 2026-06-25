@@ -85,24 +85,7 @@ export default function LoginPage() {
             </>
           )}
         </button>
-        <div className="relative my-2">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-white/10" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase tracking-wider text-slate-500">
-            <span className="bg-transparent px-2">Demo access</span>
-          </div>
-        </div>
-        <div className="rounded-xl border border-white/10 bg-black/30 p-4 text-sm">
-          <p className="flex justify-between text-slate-400">
-            <span>Email</span>
-            <span className="font-mono text-white">demo@agrivoice.com</span>
-          </p>
-          <p className="mt-2 flex justify-between text-slate-400">
-            <span>Password</span>
-            <span className="font-mono text-white">password123</span>
-          </p>
-        </div>
+
       </form>
       <p className="mt-6 text-center text-sm text-slate-400">
         Don&apos;t have an account?{" "}
