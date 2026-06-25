@@ -25,7 +25,7 @@ interface Message {
 }
 
 export function ChatBotWidget() {
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
     const { language, setLanguage } = useChat();
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<Message[]>([]);
@@ -49,7 +49,7 @@ export function ChatBotWidget() {
         }
     }, [messages, isOpen]);
 
-    if (!session) return null;
+    if (status !== "authenticated" || !session?.user) return null;
 
     const handleSend = async () => {
         if (!inputValue.trim() || isLoading) return;
