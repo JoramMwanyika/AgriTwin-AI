@@ -146,7 +146,7 @@ export async function POST(req: NextRequest) {
         console.log(`[v0] Trying Featherless API Chat...`);
         
         const completion = await featherless.chat.completions.create({
-          model: "meta-llama/Meta-Llama-3-70B-Instruct",
+          model: "Qwen/Qwen2.5-72B-Instruct",
           messages: apiMessages as any, // Bypass strict type checking for basic array
           temperature: language === "en" ? 0.5 : 0.35,
           max_tokens: 1500,

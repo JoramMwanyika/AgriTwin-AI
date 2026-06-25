@@ -21,7 +21,7 @@ def extract_knowledge(text_chunk: str):
     
     try:
         response = client.chat.completions.create(
-            model="meta-llama/Meta-Llama-3-8B-Instruct",
+            model="Qwen/Qwen2.5-7B-Instruct",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": text_chunk}

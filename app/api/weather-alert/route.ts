@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     const { weatherData, farmContext } = body;
 
     const completion = await featherless.chat.completions.create({
-      model: "mistralai/Mistral-7B-Instruct-v0.2",
+      model: "Qwen/Qwen2.5-72B-Instruct",
       messages: [
         { role: "system", content: "You turn raw weather data into a short 2-sentence actionable farming alert based on the farm context. Return only the message text." },
         { role: "user", content: `Weather: ${JSON.stringify(weatherData)}\nFarm Context: ${farmContext}` }
