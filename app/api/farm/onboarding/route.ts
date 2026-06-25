@@ -20,9 +20,8 @@ export async function POST(req: Request) {
             );
         }
 
-        // Convert size to a standard unit (e.g., Acres) if needed. 
-        // For simplicity, we'll store as is or assume the UI sends a standard number.
-        const totalSize = parseFloat(farmSize);
+        // Convert size to a standard unit
+        const totalSize = parseFloat(farmSize) || 0;
 
         // Create Farm and Blocks in a transaction
         const farm = await db.farm.create({
@@ -33,23 +32,16 @@ export async function POST(req: Request) {
                 size: totalSize,
                 blocks: {
                     create: blocks.map((block: any, index: number) => {
-                        // Calculate simplistic grid position based on index if not provided
-                        // We'll create a simple 2x3 or 3x3 grid layout logic here or let UI handle it 
-                        // For now, let's just initialize them without specific grid config 
-                        // and let the 2D layout engine organize them, or we can pre-calculate.
-
-                        // Let's assign a basic default color/position relative to index
                         const colors = ["primary", "yellow", "brown", "lightgreen", "darkgreen"];
                         const color = colors[index % colors.length];
 
-                        // Simple auto-layout: 2 columns
                         const row = Math.floor(index / 2) + 1;
                         const col = (index % 2) + 1;
 
                         return {
                             name: block.name,
                             cropType: block.crop,
-                            area: parseFloat(block.size),
+                            area: parseFloat(block.size) || 0,
                             gridConfig: {
                                 row: row,
                                 col: col,
@@ -66,7 +58,7 @@ export async function POST(req: Request) {
             }
         });
 
-        // Generate simulated sensors and readings for each block so they appear on the dashboard
+        // Generate simulated sensors and readings
         for (const block of farm.blocks) {
             const sensor = await db.sensor.create({
                 data: {
@@ -80,6 +72,7 @@ export async function POST(req: Request) {
                 data: {
                     sensorId: sensor.id,
                     blockId: block.id,
+                    timestamp: new Date(),
                     moisture: Math.floor(40 + Math.random() * 40),
                     temp: Math.floor(20 + Math.random() * 15),
                     humidity: Math.floor(50 + Math.random() * 30),
