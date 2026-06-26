@@ -23,6 +23,7 @@ export async function generateAiRecommendationForBlock(
   const prompt = `
     You are an expert AI Agronomist for AgriTwin.
     Analyze the following farm block and provide a daily recommendation.
+    IMPORTANT: The recommendations MUST be entirely in English, regardless of the crop name.
     
     Block Name: ${blockName}
     Current Crop: ${cropType || "None"}

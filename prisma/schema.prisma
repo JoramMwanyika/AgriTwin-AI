@@ -49,6 +49,7 @@ model Farm {
   name      String
   location  String?
   size      Float?
+  layout    Json?
   userId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
