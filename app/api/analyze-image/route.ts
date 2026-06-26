@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getLanguageName, normalizeLanguageCode } from "@/lib/languages"
-import { openai } from "@/lib/ai"
 
 // Azure Computer Vision for image analysis
 const VISION_ENDPOINT = process.env.AZURE_VISION_ENDPOINT!
@@ -21,6 +20,8 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await imageFile.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
     const base64Image = buffer.toString("base64")
+    const mimeType = imageFile.type || "image/jpeg"
+    const dataUrl = `data:${mimeType};base64,${base64Image}`
 
     // Step 1: Analyze image with Azure Computer Vision
     const visionResponse = await fetch(
@@ -46,11 +47,10 @@ export async function POST(req: NextRequest) {
       denseCaptions = visionData.denseCaptionsResult?.values?.map((c: { text: string }) => c.text).join("; ") || ""
     } else {
       console.error("Vision API Error:", visionResponse.status, await visionResponse.text())
-      // We continue to AI Brain even if Vision fails, using just the image.
     }
 
-    // Step 2: Use AI Brain (Featherless Qwen-VL-Chat) with Vision tags
-    const analysisPrompt = `You are an expert agricultural plant pathologist. Analyze this image and identify any plant diseases, pests, or health issues.
+    // Step 2: Use GitHub Models (gpt-4o) as the Multi-Modal Brain
+    const analysisPrompt = `You are an expert agricultural plant pathologist. Analyze this image and identify any plant diseases, pests, or health issues. You have the ability to identify all types of crops and diseases affecting them.
 
 Computer Vision Tags: ${tags}
 Computer Vision Caption: ${caption}
@@ -78,18 +78,46 @@ Respond in this exact JSON format:
 }
 Only output the JSON object, nothing else.`;
 
-    const gptResponse = await openai.chat.completions.create({
-        model: "Qwen/Qwen2.5-7B-Instruct",
+    const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+    const GITHUB_MODEL = process.env.GITHUB_MODEL || "gpt-4o";
+    let GITHUB_ENDPOINT = process.env.GITHUB_MODELS_ENDPOINT || "https://models.inference.ai.azure.com/chat/completions";
+    if (!GITHUB_ENDPOINT.endsWith("/chat/completions")) {
+      GITHUB_ENDPOINT = `${GITHUB_ENDPOINT.replace(/\/$/, "")}/chat/completions`;
+    }
+
+    const gptResponse = await fetch(GITHUB_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${GITHUB_TOKEN}`,
+      },
+      body: JSON.stringify({
+        model: GITHUB_MODEL,
         messages: [
-            {
-                role: "user",
-                content: analysisPrompt
-            }
+          {
+            role: "system",
+            content: "You are an expert agricultural plant pathologist. Always respond with valid JSON.",
+          },
+          { 
+            role: "user", 
+            content: [
+              { type: "text", text: analysisPrompt },
+              { type: "image_url", image_url: { url: dataUrl } }
+            ]
+          },
         ],
+        max_tokens: 800,
         temperature: 0.3,
+      }),
     });
 
-    const gptContent = gptResponse.choices[0]?.message?.content || "";
+    let gptContent = "";
+    if (gptResponse.ok) {
+        const gptData = await gptResponse.json();
+        gptContent = gptData.choices?.[0]?.message?.content || "";
+    } else {
+        console.error("Brain API Error:", gptResponse.status, await gptResponse.text());
+    }
     
     let analysis;
     try {
