@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getNeo4jDriver } from "@/lib/neo4j";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { generateCropKnowledge } from "@/lib/ai";
 
 export const dynamic = 'force-dynamic';
 
@@ -69,15 +70,9 @@ export async function GET(req: NextRequest) {
 
                 for (const crop of missingCrops) {
                     try {
-                        const pythonApiUrl = process.env.NEXT_PUBLIC_PYTHON_API_URL || "http://127.0.0.1:8000";
-                        const res = await fetch(`${pythonApiUrl}/api/extract-crop-knowledge`, {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ crop_name: crop })
-                        });
+                        const aiData = await generateCropKnowledge(crop);
                         
-                        if (res.ok) {
-                            const aiData = await res.json();
+                        if (aiData) {
                             if (aiData.relationships && Array.isArray(aiData.relationships)) {
                                 for (const rel of aiData.relationships) {
                                     // Insert into Neo4j

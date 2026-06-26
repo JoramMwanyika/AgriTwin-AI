@@ -1,14 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getLanguageName, normalizeLanguageCode } from "@/lib/languages"
+import { openai } from "@/lib/ai"
 
 // Azure Computer Vision for image analysis
 const VISION_ENDPOINT = process.env.AZURE_VISION_ENDPOINT!
 const VISION_KEY = process.env.AZURE_VISION_KEY!
-
-// Azure GPT-4 for disease analysis
-const GPT_ENDPOINT = process.env.AZURE_OPENAI_ENDPOINT!
-const GPT_KEY = process.env.AZURE_OPENAI_KEY!
-const GPT_API_VERSION = process.env.AZURE_OPENAI_API_VERSION || "2025-01-01-preview"
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,9 +20,9 @@ export async function POST(req: NextRequest) {
     // Convert file to buffer
     const arrayBuffer = await imageFile.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
+    const base64Image = buffer.toString("base64")
 
     // Step 1: Analyze image with Azure Computer Vision
-    // Removed 'caption,denseCaptions' as they are not supported in all Azure regions
     const visionResponse = await fetch(
       `${VISION_ENDPOINT}/computervision/imageanalysis:analyze?api-version=2024-02-01&features=tags,objects`,
       {
@@ -39,30 +35,25 @@ export async function POST(req: NextRequest) {
       },
     )
 
-    if (!visionResponse.ok) {
-      const errorText = await visionResponse.text()
-      console.error("Vision API Error:", visionResponse.status, errorText)
-      return NextResponse.json({ error: "Failed to analyze image", details: errorText }, { status: 500 })
+    let tags = ""
+    let caption = "Image visual features extracted"
+    let denseCaptions = ""
+
+    if (visionResponse.ok) {
+      const visionData = await visionResponse.json()
+      caption = visionData.captionResult?.text || caption
+      tags = visionData.tagsResult?.values?.map((t: { name: string }) => t.name).join(", ") || ""
+      denseCaptions = visionData.denseCaptionsResult?.values?.map((c: { text: string }) => c.text).join("; ") || ""
+    } else {
+      console.error("Vision API Error:", visionResponse.status, await visionResponse.text())
+      // We continue to AI Brain even if Vision fails, using just the image.
     }
 
-    const visionText = await visionResponse.text()
-    let visionData;
-    try {
-      visionData = JSON.parse(visionText)
-    } catch {
-      console.error("Vision API JSON Parse Error:", visionText)
-      return NextResponse.json({ error: "Invalid response from Vision API" }, { status: 500 })
-    }
-
-    // Extract relevant information
-    const caption = visionData.captionResult?.text || "Image visual features extracted"
-    const tags = visionData.tagsResult?.values?.map((t: { name: string }) => t.name).join(", ") || ""
-    const denseCaptions = visionData.denseCaptionsResult?.values?.map((c: { text: string }) => c.text).join("; ") || ""
-
-    // Step 2: Use GitHub Models (gpt-4o) with Vision to analyze for plant diseases
+    // Step 2: Use AI Brain (Featherless Qwen-VL-Chat) with Vision tags
     const analysisPrompt = `You are an expert agricultural plant pathologist. Analyze this image and identify any plant diseases, pests, or health issues.
 
 Computer Vision Tags: ${tags}
+Computer Vision Caption: ${caption}
 
 Based on this image and the provided tags:
 1. Identify if this appears to be a plant/crop image
@@ -72,15 +63,11 @@ Based on this image and the provided tags:
 5. List key symptoms visible
 6. Provide an actionable recommendation on what to do next (TREATMENT).
 
-VERY IMPORTANT: ${
-      languageCode === "en"
-        ? "Write all JSON string values in English."
-        : `Translate your ENTIRE final JSON output (treatment, symptoms, summary, condition) into ${languageLabel}. Write as a native speaker; do not leave English in string values.`
-    } 
+VERY IMPORTANT: Translate your ENTIRE final JSON output (treatment, symptoms, summary, condition) into ${languageLabel}. Write as a native speaker; do not leave English in string values.
 
 Respond in this exact JSON format:
 {
-  "isPlant": true/false,
+  "isPlant": true,
   "plantType": "identified plant or crop type",
   "condition": "disease or condition name, or 'Healthy' if no issues",
   "severity": "Mild/Moderate/Severe/Healthy",
@@ -88,83 +75,32 @@ Respond in this exact JSON format:
   "confidence": "High/Medium/Low",
   "summary": "Brief 1-2 sentence summary for farmer",
   "treatment": "Actionable recommendation or treatment plan that the farmer should do right now."
-}`
+}
+Only output the JSON object, nothing else.`;
 
-    const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-    const GITHUB_MODEL = process.env.GITHUB_MODEL || "gpt-4o";
-    let GITHUB_ENDPOINT = process.env.GITHUB_MODELS_ENDPOINT || "https://models.inference.ai.azure.com/chat/completions";
-    if (!GITHUB_ENDPOINT.endsWith("/chat/completions")) {
-      GITHUB_ENDPOINT = `${GITHUB_ENDPOINT.replace(/\/$/, "")}/chat/completions`;
-    }
-
-    const mimeType = imageFile.type || "image/jpeg"
-    const base64Image = buffer.toString("base64")
-    const dataUrl = `data:${mimeType};base64,${base64Image}`
-
-    const gptResponse = await fetch(GITHUB_ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${GITHUB_TOKEN}`,
-      },
-      body: JSON.stringify({
-        model: GITHUB_MODEL,
+    const gptResponse = await openai.chat.completions.create({
+        model: "Qwen/Qwen2.5-7B-Instruct",
         messages: [
-          {
-            role: "system",
-            content: "You are an expert agricultural plant pathologist. Always respond with valid JSON.",
-          },
-          { 
-            role: "user", 
-            content: [
-              { type: "text", text: analysisPrompt },
-              { type: "image_url", image_url: { url: dataUrl } }
-            ]
-          },
+            {
+                role: "user",
+                content: analysisPrompt
+            }
         ],
-        max_tokens: 800,
         temperature: 0.3,
-      }),
-    })
+    });
 
-    if (!gptResponse.ok) {
-      const errorText = await gptResponse.text()
-      console.error("GPT Analysis Error:", gptResponse.status, errorText)
-      // Return basic vision results if GPT fails
-      return NextResponse.json({
-        analysis: {
-          isPlant: tags.toLowerCase().includes("plant") || tags.toLowerCase().includes("leaf"),
-          plantType: "Unknown",
-          condition: "Analysis unavailable",
-          severity: "Unknown",
-          symptoms: [],
-          confidence: "Low",
-          summary: caption,
-          treatment: "Unable to generate treatment plan."
-        },
-        rawVision: { caption, tags, denseCaptions },
-      })
-    }
-
-    const gptText = await gptResponse.text()
-    let gptData;
+    const gptContent = gptResponse.choices[0]?.message?.content || "";
+    
+    let analysis;
     try {
-      gptData = JSON.parse(gptText)
-    } catch {
-      console.error("GPT API JSON Parse Error:", gptText)
-      gptData = {}
-    }
-    const gptContent = gptData.choices?.[0]?.message?.content || ""
-
-    let analysis
-    try {
-      const jsonMatch = gptContent.match(/\{[\s\S]*\}/)
-      analysis = jsonMatch ? JSON.parse(jsonMatch[0]) : null
+      const jsonMatch = gptContent.match(/\{[\s\S]*\}/);
+      analysis = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
       
       if (!analysis || !analysis.severity || !analysis.condition) {
-        throw new Error("Missing required fields in GPT response")
+        throw new Error("Missing required fields in Brain response");
       }
     } catch {
+      console.error("Failed to parse Brain response:", gptContent);
       analysis = { 
         isPlant: false,
         plantType: "Unknown",
@@ -172,7 +108,7 @@ Respond in this exact JSON format:
         severity: "Unknown",
         symptoms: [],
         confidence: "Low",
-        summary: gptContent || "Failed to generate a valid analysis. Please try again.",
+        summary: "Failed to generate a valid analysis from the AI brain. Please try again.",
         treatment: "Please try taking another clear picture of the plant."
       }
     }

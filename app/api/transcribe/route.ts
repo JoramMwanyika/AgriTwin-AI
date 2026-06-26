@@ -1,8 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 
-const WHISPER_BACKEND_URL =
-  process.env.WHISPER_BACKEND_URL || "http://127.0.0.1:8000/transcribe"
 
 export async function POST(req: NextRequest) {
   try {
