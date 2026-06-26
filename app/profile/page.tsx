@@ -5,7 +5,7 @@ import { AppShell } from "@/components/app-shell"
 import { AppPageHeader } from "@/components/app-page-header"
 import { Card, CardContent } from "@/components/ui/card"
 import { User, Globe, ChevronRight, LogOut, Settings, Bell, PenLine, Shield, HelpCircle } from "lucide-react"
-import { signOut } from "next-auth/react"
+import { handleSignOut } from "@/app/actions"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
@@ -341,7 +341,7 @@ export default function ProfilePage() {
           <Button
             variant="outline"
             className="w-full gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 bg-white border border-red-200 shadow-sm h-12 text-base font-medium rounded-xl"
-            onClick={() => signOut({ callbackUrl: '/' })}
+            onClick={() => handleSignOut()}
           >
             <LogOut className="h-5 w-5" /> Sign Out
           </Button>
