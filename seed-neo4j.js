@@ -25,30 +25,45 @@ async function seed() {
             CREATE (maize:Crop {name: 'Maize'})
             CREATE (beans:Crop {name: 'Beans'})
             CREATE (tomatoes:Crop {name: 'Tomatoes'})
+            CREATE (watermelon:Crop {name: 'Watermelon'})
+            CREATE (cabbage:Crop {name: 'Cabbage'})
+            CREATE (potato:Crop {name: 'Potato'})
             
             // Diseases & Pests
             CREATE (faw:Disease {name: 'Fall Armyworm', type: 'Pest'})
             CREATE (mln:Disease {name: 'Maize Lethal Necrosis', type: 'Virus'})
             CREATE (rust:Disease {name: 'Bean Rust', type: 'Fungus'})
             CREATE (blight:Disease {name: 'Early Blight', type: 'Fungus'})
+            CREATE (powdery_mildew:Disease {name: 'Powdery Mildew', type: 'Fungus'})
+            CREATE (dbm:Disease {name: 'Diamondback Moth', type: 'Pest'})
+            CREATE (late_blight:Disease {name: 'Late Blight', type: 'Fungus'})
 
             // Treatments / Pesticides
             CREATE (t_faw:Treatment {name: 'Spinetoram 120SC', method: 'Chemical Spray'})
             CREATE (t_rust:Treatment {name: 'Mancozeb 80WP', method: 'Fungicide Spray'})
             CREATE (t_blight:Treatment {name: 'Copper Oxychloride', method: 'Fungicide Spray'})
             CREATE (t_mln:Treatment {name: 'Crop Rotation & Vector Control', method: 'Cultural'})
+            CREATE (t_sulfur:Treatment {name: 'Sulfur Fungicide', method: 'Fungicide Spray'})
+            CREATE (t_bt:Treatment {name: 'Bacillus thuringiensis (Bt)', method: 'Biological Spray'})
+            CREATE (t_late_blight:Treatment {name: 'Chlorothalonil', method: 'Fungicide Spray'})
 
             // Relationships: Crop -> Disease
             CREATE (maize)-[:VULNERABLE_TO]->(faw)
             CREATE (maize)-[:VULNERABLE_TO]->(mln)
             CREATE (beans)-[:VULNERABLE_TO]->(rust)
             CREATE (tomatoes)-[:VULNERABLE_TO]->(blight)
+            CREATE (watermelon)-[:VULNERABLE_TO]->(powdery_mildew)
+            CREATE (cabbage)-[:VULNERABLE_TO]->(dbm)
+            CREATE (potato)-[:VULNERABLE_TO]->(late_blight)
 
             // Relationships: Disease -> Treatment
             CREATE (faw)-[:TREATED_BY]->(t_faw)
             CREATE (rust)-[:TREATED_BY]->(t_rust)
             CREATE (blight)-[:TREATED_BY]->(t_blight)
             CREATE (mln)-[:TREATED_BY]->(t_mln)
+            CREATE (powdery_mildew)-[:TREATED_BY]->(t_sulfur)
+            CREATE (dbm)-[:TREATED_BY]->(t_bt)
+            CREATE (late_blight)-[:TREATED_BY]->(t_late_blight)
         `);
 
         console.log("Seeding Supply Chain Graph...");

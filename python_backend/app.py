@@ -2,6 +2,12 @@ from fastapi import FastAPI, File, UploadFile, Form, WebSocket, WebSocketDisconn
 from fastapi.middleware.cors import CORSMiddleware
 from faster_whisper import WhisperModel
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from the parent directory
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env.local'))
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
+
 import tempfile
 import uvicorn
 import asyncio
@@ -181,6 +187,20 @@ async def scan_crop(file: UploadFile = File(...)):
     except Exception as e:
         print(f"Featherless VLM Error: {e}")
         return {"error": "Failed to analyze image", "details": str(e)}
+
+from extract_knowledge import generate_crop_knowledge
+from pydantic import BaseModel
+
+class CropRequest(BaseModel):
+    crop_name: str
+
+@app.post("/api/extract-crop-knowledge")
+async def extract_crop_knowledge_endpoint(request: CropRequest):
+    data = generate_crop_knowledge(request.crop_name)
+    if data:
+        return data
+    else:
+        return {"error": "Failed to generate crop knowledge"}
 
 if __name__ == "__main__":
 

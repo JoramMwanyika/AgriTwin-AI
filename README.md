@@ -13,7 +13,7 @@ But the challenges extend beyond the farm gate. **Financial institutions (AgriFi
 **AgriTwin** bridges the gap between traditional farming and modern data science by creating a verifiable, interconnected ecosystem:
 
 * **3D Digital Farm Twin**: We pull farmers out of the dark by giving them a visual, interactive 3D replica of their farm (built with React Three Fiber) that maps real-time soil moisture, crop health, and environmental telemetry.
-* **Graph-Powered AI Advisor**: Our AI doesn't just guess; it reasons. By leveraging **Neo4j**, we've built a **Crop Knowledge Graph** that maps the relationships between specific crops, their vulnerabilities (diseases/pests), and targeted treatments. Powered by the **Featherless API** for high-performance open-source LLMs, the AI uses this graph to deliver hyper-contextual, verified agronomic advice.
+* **Graph-Powered AI Advisor**: Our AI doesn't just guess; it reasons. By leveraging **Neo4j**, we've built a **Crop Knowledge Graph** that maps the relationships between specific crops, their vulnerabilities (diseases/pests), and targeted treatments. Powered by the **Featherless API** for high-performance open-source LLMs, the AI uses this graph to deliver hyper-contextual, verified agronomic advice. Additionally, our intelligent backend auto-generates knowledge graph data on the fly for any unknown crops, ensuring continuous learning and comprehensive coverage for every farmer.
 * **Multilingual Inclusivity**: Using Azure AI (Speech, Translator) alongside powerful Vision models from **Featherless**, farmers interact with the app via voice and images in their native languages (e.g., Swahili), removing literacy barriers.
 * **De-Risking via Market Matching & Supply Chain Graphs**: This is where agricultural finance changes entirely. We use **Neo4j** to build a **Supply Chain Graph** that mathematically maps farmers directly to distributors and verified buyers based on their crop type, scale, and volume. By securing off-take agreements and **market matching** before the crop is even harvested, we provide financial institutions with a verifiable "guaranteed revenue" metric. Lenders no longer need traditional collateral—the transparent farm audit trail combined with graph-matched buyer contracts serves as the ultimate de-risking tool, unlocking micro-loans and insurance.
 
@@ -38,6 +38,7 @@ But the challenges extend beyond the farm gate. **Financial institutions (AgriFi
 7. **Weather & Agronomic Alerts (`/alerts`)**: Context-aware notifications that warn farmers about upcoming extreme weather events or agronomic risks.
 8. **Team & Worker Management (`/team`)**: Tools to manage farm workers, track roles, and oversee labor assignments across different farm blocks.
 9. **User Profile & Settings (`/profile`)**: Manage personal settings, notification preferences, and application localization (multi-language support).
+10. **Graph Network & Traceability (`/network`)**: Visualizes the Neo4j-powered Crop Knowledge Graph (with intelligent AI auto-generation for new crops) and maps end-to-end supply chain traceability from farm to retailer.
 
 ---
 
