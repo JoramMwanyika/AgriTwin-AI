@@ -87,6 +87,12 @@ export default function LoginPage() {
             </>
           )}
         </button>
+        <p className="pt-6 text-center text-sm font-medium text-slate-400">
+          Don&apos;t have an account?{" "}
+          <Link href="/register" className="font-bold text-[#00e676] hover:text-[#00c853] transition-colors hover:underline">
+            Sign up for free
+          </Link>
+        </p>
       </form>
     </AuthLayout>
   )

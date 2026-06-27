@@ -49,9 +49,9 @@ export function AuthLayout({ children, title, subtitle, tagline }: AuthLayoutPro
           </div>
 
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+            initial={{ opacity: 0, y: 30, filter: "blur(10px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ duration: 0.8, delay: 0.2, type: "spring", bounce: 0.3 }}
             className="mx-auto w-full max-w-md"
           >
             <div className="mb-10">
