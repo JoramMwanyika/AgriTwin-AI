@@ -15,6 +15,7 @@ type FarmBlock3DProps = {
     subLabel: string;
     progress: number;
     onClick: () => void;
+    isConflicting?: boolean;
 };
 
 const DynamicModel = ({ modelName, targetSize, isCrop, instances, fallback }: { modelName: string, targetSize: [number, number, number], isCrop?: boolean, instances?: any[], fallback: React.ReactNode }) => {
@@ -75,7 +76,7 @@ const DynamicModel = ({ modelName, targetSize, isCrop, instances, fallback }: { 
     );
 };
 
-const FarmBlock3D = ({ position, size, color, type, label, subLabel, progress, onClick }: FarmBlock3DProps) => {
+const FarmBlock3D = ({ position, size, color, type, label, subLabel, progress, onClick, isConflicting }: FarmBlock3DProps) => {
     const mesh = useRef<THREE.Mesh>(null!);
     const [hovered, setHover] = useState(false);
     useCursor(hovered);
@@ -346,12 +347,14 @@ const FarmBlock3D = ({ position, size, color, type, label, subLabel, progress, o
             >
                 <boxGeometry args={size} />
                 <meshStandardMaterial
-                    color={hovered ? "#3b82f6" : "#1e293b"}
+                    color={isConflicting ? "#ef4444" : (hovered ? "#3b82f6" : "#1e293b")}
                     transparent opacity={0.8}
+                    emissive={isConflicting ? "#ef4444" : "#000000"}
+                    emissiveIntensity={isConflicting ? 0.5 : 0}
                 />
                 <lineSegments>
                     <edgesGeometry args={[new THREE.BoxGeometry(size[0], size[1], size[2])]} />
-                    <lineBasicMaterial color={hovered ? "#60a5fa" : "#334155"} />
+                    <lineBasicMaterial color={isConflicting ? "#f87171" : (hovered ? "#60a5fa" : "#334155")} />
                 </lineSegments>
             </mesh>
 
@@ -368,11 +371,12 @@ const FarmBlock3D = ({ position, size, color, type, label, subLabel, progress, o
                 ${hovered ? 'scale-110 opacity-100' : 'scale-100 opacity-90'}
             `}>
                     <div className="flex flex-col items-center">
-                        <div className="bg-black/80 backdrop-blur-md border border-[#3b82f6]/50 px-3 py-1.5 rounded-lg shadow-[0_0_15px_rgba(59,130,246,0.5)] flex flex-col items-center">
-                            <span className="text-white font-bold whitespace-nowrap text-[10px] tracking-widest uppercase">{subLabel || label}</span>
-                            {subLabel && <span className="text-[#c0ff01] text-[9px] font-mono mt-0.5">HEALTH: {progress}%</span>}
+                        <div className={`bg-black/80 backdrop-blur-md border ${isConflicting ? 'border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.8)] animate-pulse' : 'border-[#3b82f6]/50 shadow-[0_0_15px_rgba(59,130,246,0.5)]'} px-3 py-1.5 rounded-lg flex flex-col items-center`}>
+                            <span className={`${isConflicting ? 'text-red-400' : 'text-white'} font-bold whitespace-nowrap text-[10px] tracking-widest uppercase`}>{subLabel || label}</span>
+                            {isConflicting && <span className="text-red-400 text-[9px] font-mono mt-0.5">⚠ CONFLICT</span>}
+                            {!isConflicting && subLabel && <span className="text-[#c0ff01] text-[9px] font-mono mt-0.5">HEALTH: {progress}%</span>}
                         </div>
-                        <div className="w-px h-8 bg-gradient-to-b from-[#3b82f6] to-transparent"></div>
+                        <div className={`w-px h-8 bg-gradient-to-b ${isConflicting ? 'from-red-500' : 'from-[#3b82f6]'} to-transparent`}></div>
                     </div>
                 </div>
             </Html>

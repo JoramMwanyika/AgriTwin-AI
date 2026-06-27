@@ -26,9 +26,10 @@ type FarmBlock = {
 type Farm3DViewProps = {
     blocks: FarmBlock[];
     onBlockClick: (block: FarmBlock) => void;
+    conflictingBlockIds?: Set<string | number>;
 };
 
-const Farm3DView = ({ blocks, onBlockClick }: Farm3DViewProps) => {
+const Farm3DView = ({ blocks, onBlockClick, conflictingBlockIds }: Farm3DViewProps) => {
     // Grid settings
     const gridSize = 4; // Assuming a 4x4 or 5x5 grid
     const spacing = 2.5; // Space between blocks
@@ -111,6 +112,7 @@ const Farm3DView = ({ blocks, onBlockClick }: Farm3DViewProps) => {
                                     subLabel={block.cropName !== "Unknown" ? block.cropName : ""}
                                     progress={block.progress || Math.floor(Math.random() * 100)} // Mock progress if missing
                                     onClick={() => onBlockClick(block)}
+                                    isConflicting={conflictingBlockIds?.has(block.id)}
                                 />
                             );
                         })}

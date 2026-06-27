@@ -29,16 +29,18 @@ But the challenges extend beyond the farm gate. **Financial institutions (AgriFi
 
 ## 🌟 4. Core Features Explained
 
-1. **AI Advisor (`/advisor`)**: A multilingual, AI-powered farming assistant driven by **Featherless API** (e.g., Llama-3 70B), providing agronomic advice tailored to the farmer's specific needs, accessible via text or voice.
-2. **3D Farm Digital Twin (`/farm`)**: A highly interactive 3D map visualizing the farm layout, infrastructure, crop types, and live sensor data like soil moisture levels.
-3. **Crop Disease Scanning (`/scan`)**: A visual diagnostic tool leveraging Vision-Language Models via the Featherless API to identify crop diseases and pests directly from user-uploaded images.
-4. **Market Hub (`/market`)**: Provides real-time agricultural market prices, trends, and facilitates connections to buyers, ensuring farmers get the best value for their produce.
-5. **Crop Calendar (`/calendar`)**: A visual timeline for agricultural planning, allowing farmers to schedule planting, maintenance, and harvesting across seasons.
-6. **Task Management (`/tasks`)**: A specialized tracker to log, assign, and monitor daily farm activities and operational progress.
-7. **Weather & Agronomic Alerts (`/alerts`)**: Context-aware notifications that warn farmers about upcoming extreme weather events or agronomic risks.
-8. **Team & Worker Management (`/team`)**: Tools to manage farm workers, track roles, and oversee labor assignments across different farm blocks.
-9. **User Profile & Settings (`/profile`)**: Manage personal settings, notification preferences, and application localization (multi-language support).
-10. **Graph Network & Traceability (`/network`)**: Visualizes the Neo4j-powered Crop Knowledge Graph (with intelligent AI auto-generation for new crops) and maps end-to-end supply chain traceability from farm to retailer.
+1. **Main Dashboard (`/dashboard`)**: A central command center providing an overview of overall farm health, critical active alerts, task summaries, and live market prices.
+2. **AI Advisor (`/advisor`)**: A multilingual, AI-powered farming assistant driven by **Featherless API** (e.g., Llama-3 70B), providing agronomic advice tailored to the farmer's specific needs, accessible via text or voice.
+3. **3D Farm Digital Twin (`/farm`)**: A highly interactive 3D map visualizing the farm layout, infrastructure, crop types, and live sensor data like soil moisture levels.
+4. **Crop Disease Scanning (`/scan`)**: A visual diagnostic tool leveraging Vision-Language Models via the Featherless API to identify crop diseases and pests directly from user-uploaded images.
+5. **Market Hub (`/market`)**: Provides real-time agricultural market prices, trends, and facilitates connections to buyers, ensuring farmers get the best value for their produce.
+6. **Crop Calendar (`/calendar`)**: A visual timeline for agricultural planning, allowing farmers to schedule planting, maintenance, and harvesting across seasons.
+7. **Task Management (`/tasks`)**: A specialized tracker to log, assign, and monitor daily farm activities and operational progress.
+8. **Weather & Agronomic Alerts (`/alerts`)**: Context-aware notifications that warn farmers about upcoming extreme weather events or agronomic risks.
+9. **Team & Worker Management (`/team`)**: Tools to manage farm workers, track roles, and oversee labor assignments across different farm blocks.
+10. **User Profile & Settings (`/profile`)**: Manage personal settings, notification preferences, and application localization (multi-language support).
+11. **Graph Network & Traceability (`/network`)**: Visualizes the Neo4j-powered Crop Knowledge Graph (with intelligent AI auto-generation for new crops) and maps end-to-end supply chain traceability from farm to retailer.
+12. **Authentication & Onboarding (`/login`, `/register`, `/onboarding`)**: Secure user authentication and a tailored onboarding flow to set up the initial farm profile.
 
 ---
 

@@ -557,7 +557,7 @@ export default function FarmTwinPage() {
 
         {is3DView ? (
           <div className="rounded-3xl border border-slate-700/50 shadow-2xl overflow-hidden bg-[#1e293b]/50 backdrop-blur-md">
-             <Farm3DView blocks={farmBlocks} onBlockClick={(b) => toast.info(`Selected: ${b.blockName}`)} />
+             <Farm3DView blocks={farmBlocks} onBlockClick={(b) => toast.info(`Selected: ${b.blockName}`)} conflictingBlockIds={conflictingBlockIds} />
           </div>
         ) : (
           <div className="relative w-full rounded-3xl border border-slate-800 shadow-2xl bg-[#0a0f18] overflow-hidden group">

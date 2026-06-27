@@ -82,6 +82,7 @@ const structureIcons: Record<string, string> = {
 export function FarmMapWidget() {
     const [farmBlocks, setFarmBlocks] = useState<FarmBlock[]>([]);
     const [is3DView, setIs3DView] = useState(false);
+    const [conflictingBlockIds, setConflictingBlockIds] = useState<Set<string | number>>(new Set());
 
     useEffect(() => {
         loadFarmData();
@@ -126,6 +127,23 @@ export function FarmMapWidget() {
                         };
                     });
                     setFarmBlocks(mappedBlocks);
+                    
+                    // Check conflicts
+                    try {
+                        const conflictRes = await fetch('/api/graph/crop-conflict', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ blocks: mappedBlocks })
+                        });
+                        if (conflictRes.ok) {
+                            const data = await conflictRes.json();
+                            if (data.conflictingBlockIds?.length > 0) {
+                                setConflictingBlockIds(new Set(data.conflictingBlockIds));
+                            }
+                        }
+                    } catch (err) {
+                        console.error("Failed to fetch conflicts", err);
+                    }
                 }
             } else {
                 toast.error("Failed to load map data");
@@ -177,7 +195,7 @@ export function FarmMapWidget() {
             <div className="relative w-full h-[320px] md:h-[400px] rounded-xl overflow-hidden bg-gradient-to-b from-sky-50 to-emerald-50/30 border border-slate-200">
                 {is3DView ? (
                     <div className="w-full h-full">
-                        <Farm3DView blocks={farmBlocks} onBlockClick={(b) => toast.info(`Selected: ${b.blockName}`)} />
+                        <Farm3DView blocks={farmBlocks} onBlockClick={(b) => toast.info(`Selected: ${b.blockName}`)} conflictingBlockIds={conflictingBlockIds} />
                     </div>
                 ) : (
                     <div className="relative z-10 p-4 h-full bg-[url('/bg_mesh.png')] bg-cover bg-center overflow-auto">
@@ -188,6 +206,7 @@ export function FarmMapWidget() {
                                 {farmBlocks.map((block) => {
                                     const colors = getColorClasses(block.color);
                                     const icon = structureIcons[block.structure] || "🌱";
+                                    const isConflicting = conflictingBlockIds.has(block.id);
                                     return (
                                         <motion.div
                                             layout
@@ -195,15 +214,17 @@ export function FarmMapWidget() {
                                             animate={{ opacity: 1, scale: 1 }}
                                             exit={{ opacity: 0, scale: 0.9 }}
                                             key={block.id}
-                                            className={`${colors.bgClass} rounded-2xl border ${colors.borderClass} p-3 flex flex-col items-start justify-between relative group shadow-sm hover:-translate-y-1 transition-transform`}
+                                            className={`${colors.bgClass} rounded-2xl border ${isConflicting ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)] animate-[conflict-blink_1s_ease-in-out_infinite]' : colors.borderClass} p-3 flex flex-col items-start justify-between relative group hover:-translate-y-1 transition-transform`}
                                             style={{
                                                 gridRow: `${block.gridPosition.row} / span ${block.gridPosition.rowSpan}`,
                                                 gridColumn: `${block.gridPosition.col} / span ${block.gridPosition.colSpan}`,
                                             }}
                                         >
                                             <div className="flex justify-between w-full items-start">
-                                                <div className={`h-2 w-2 rounded-full ${colors.indicatorClass} animate-pulse`} />
-                                                {block.healthStatus === 'warning' && (
+                                                <div className={`h-2 w-2 rounded-full ${isConflicting ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,1)]' : colors.indicatorClass} animate-pulse`} />
+                                                {isConflicting ? (
+                                                    <div className="bg-red-500 text-white text-[10px] px-1.5 rounded-full font-bold animate-pulse">⚠</div>
+                                                ) : block.healthStatus === 'warning' && (
                                                     <div className="bg-red-500 text-white text-[10px] px-1.5 rounded-full font-bold animate-pulse">!</div>
                                                 )}
                                             </div>
