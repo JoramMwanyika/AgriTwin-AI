@@ -109,22 +109,26 @@ export function ChatBotWidget() {
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                        transition={{ duration: 0.2 }}
-                        className="w-[350px] sm:w-[400px] h-[500px] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col mb-4 overflow-hidden"
+                        initial={{ opacity: 0, y: 20, scale: 0.95, filter: "blur(4px)" }}
+                        animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+                        exit={{ opacity: 0, y: 20, scale: 0.95, filter: "blur(4px)" }}
+                        transition={{ duration: 0.25, ease: "easeOut" }}
+                        className="w-[350px] sm:w-[420px] h-[550px] bg-white/95 backdrop-blur-3xl rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.2)] border border-slate-200/60 flex flex-col mb-4 overflow-hidden"
                     >
-                        <div className="bg-slate-800 text-white p-4 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="h-8 w-8 rounded-full bg-green-500/20 flex items-center justify-center">
-                                    <Bot className="h-5 w-5 text-green-400" />
+                        <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-4 flex items-center justify-between border-b border-white/10 relative overflow-hidden">
+                            <div className="absolute inset-0 bg-emerald-500/10 mix-blend-overlay pointer-events-none" />
+                            <div className="flex items-center gap-3 relative z-10">
+                                <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 border border-white/20">
+                                    <Bot className="h-5 w-5 text-white" />
                                 </div>
-                                <span className="font-bold">AgriTwin Agent</span>
+                                <div className="flex flex-col">
+                                  <span className="font-extrabold tracking-tight text-white leading-tight">AgriTwin Agent</span>
+                                  <span className="text-[10px] text-emerald-400 font-bold tracking-wider uppercase">Online</span>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-1 relative z-10">
                                 <Select value={language} onValueChange={setLanguage}>
-                                    <SelectTrigger className="h-8 bg-transparent border-slate-600 text-slate-200 focus:ring-0 w-[110px] text-xs">
+                                    <SelectTrigger className="h-8 bg-white/10 border-white/10 text-white hover:bg-white/20 transition-colors focus:ring-0 w-[110px] text-xs rounded-lg backdrop-blur-md">
                                         <Globe className="h-3 w-3 mr-1" />
                                         <SelectValue placeholder="Language" />
                                     </SelectTrigger>
@@ -140,14 +144,14 @@ export function ChatBotWidget() {
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => setIsOpen(false)}
-                                    className="text-slate-300 hover:text-white hover:bg-slate-700 h-8 w-8 rounded-full"
+                                    className="text-white hover:bg-white/20 h-8 w-8 rounded-lg transition-colors ml-1"
                                 >
                                     <X className="h-4 w-4" />
                                 </Button>
                             </div>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto p-4 bg-slate-50 space-y-4">
+                        <div className="flex-1 overflow-y-auto p-5 bg-slate-50/50 space-y-5">
                             {messages.map((msg) => (
                                 <div
                                     key={msg.id}
@@ -155,10 +159,10 @@ export function ChatBotWidget() {
                                 >
                                     <div
                                         className={cn(
-                                            "p-3 rounded-2xl text-sm",
+                                            "p-3.5 rounded-2xl text-[14px] leading-relaxed",
                                             msg.role === "user"
-                                                ? "bg-green-500 text-white rounded-tr-sm"
-                                                : "bg-white border border-slate-200 text-slate-800 rounded-tl-sm shadow-sm"
+                                                ? "bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-tr-sm shadow-[0_4px_15px_rgba(16,185,129,0.25)]"
+                                                : "bg-white border border-slate-200/60 text-slate-700 rounded-tl-sm shadow-[0_4px_15px_rgba(0,0,0,0.04)]"
                                         )}
                                     >
                                         {msg.role === "ai" ? (
@@ -173,16 +177,17 @@ export function ChatBotWidget() {
                             ))}
                             {isLoading && (
                                 <div className="flex max-w-[85%] mr-auto">
-                                    <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-sm p-4 shadow-sm flex items-center justify-center">
-                                        <Loader2 className="h-4 w-4 animate-spin text-green-500" />
+                                    <div className="bg-white border border-slate-200/60 rounded-2xl rounded-tl-sm p-4 shadow-[0_4px_15px_rgba(0,0,0,0.04)] flex items-center justify-center gap-2">
+                                        <Loader2 className="h-4 w-4 animate-spin text-emerald-500" />
+                                        <span className="text-xs font-bold text-slate-400">Processing...</span>
                                     </div>
                                 </div>
                             )}
                             <div ref={messagesEndRef} />
                         </div>
 
-                        <div className="p-3 bg-white border-t border-slate-200">
-                            <div className="flex items-center gap-2 bg-slate-100 rounded-xl px-3 py-2 border border-slate-200 focus-within:border-green-400 focus-within:ring-1 focus-within:ring-green-400 transition-all">
+                        <div className="p-4 bg-white/80 backdrop-blur-md border-t border-slate-200/60 shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
+                            <div className="flex items-center gap-2 bg-slate-100/80 rounded-2xl px-4 py-2 border border-slate-200 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/20 transition-all shadow-inner">
                                 <input
                                     type="text"
                                     value={inputValue}
@@ -195,16 +200,16 @@ export function ChatBotWidget() {
                                             ? "Uliza chochote..."
                                             : language === "kik"
                                               ? "Ũria ũndũ..."
-                                              : "Ask anything..."
+                                              : "Ask your digital twin..."
                                     }
-                                    className="flex-1 bg-transparent border-none text-sm focus:outline-none text-slate-700 placeholder:text-slate-400"
+                                    className="flex-1 bg-transparent border-none text-[15px] focus:outline-none text-slate-800 placeholder:text-slate-400 py-1.5 font-medium"
                                     disabled={isLoading}
                                 />
                                 <Button
                                     onClick={handleSend}
                                     disabled={!inputValue.trim() || isLoading}
                                     size="icon"
-                                    className="h-8 w-8 rounded-lg bg-green-500 hover:bg-green-600 text-white shrink-0"
+                                    className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white shrink-0 shadow-md shadow-emerald-500/20 transition-all"
                                 >
                                     <Send className="h-4 w-4 ml-0.5" />
                                 </Button>
@@ -218,12 +223,12 @@ export function ChatBotWidget() {
                 <motion.button
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    whileHover={{ scale: 1.05 }}
+                    whileHover={{ scale: 1.05, rotate: -5 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setIsOpen(true)}
-                    className="h-14 w-14 bg-slate-800 hover:bg-slate-900 text-white rounded-full shadow-lg flex items-center justify-center border-2 border-white"
+                    className="h-16 w-16 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-2xl shadow-[0_10px_30px_rgba(16,185,129,0.4)] flex items-center justify-center border border-white/20"
                 >
-                    <MessageSquare className="h-6 w-6" />
+                    <MessageSquare className="h-7 w-7" />
                 </motion.button>
             )}
         </div>

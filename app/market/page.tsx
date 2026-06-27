@@ -26,8 +26,8 @@ type MarketData = {
 type PriceHistory = Record<string, { time: number; price: number }[]>;
 
 const FADE_UP_ANIMATION_VARIANTS = {
-    hidden: { opacity: 0, y: 15 },
-    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } },
+    hidden: { opacity: 0, y: 10 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.2, ease: "easeOut" } },
 };
 
 export default function MarketPage() {
@@ -148,7 +148,7 @@ export default function MarketPage() {
                                 hidden: { opacity: 0 },
                                 show: {
                                     opacity: 1,
-                                    transition: { staggerChildren: 0.08 }
+                                    transition: { staggerChildren: 0.03 }
                                 }
                             }}
                             className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
@@ -269,7 +269,7 @@ export default function MarketPage() {
                                     hidden: { opacity: 0 },
                                     show: {
                                         opacity: 1,
-                                        transition: { staggerChildren: 0.1 }
+                                        transition: { staggerChildren: 0.03 }
                                     }
                                 }}
                                 className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
@@ -396,7 +396,7 @@ export default function MarketPage() {
                                     hidden: { opacity: 0 },
                                     show: {
                                         opacity: 1,
-                                        transition: { staggerChildren: 0.1 }
+                                        transition: { staggerChildren: 0.03 }
                                     }
                                 }}
                                 className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"

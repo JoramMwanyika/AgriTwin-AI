@@ -66,13 +66,13 @@ const staggerContainer = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.12 }
+    transition: { staggerChildren: 0.03 }
   }
 };
 
 const fadeUpItem = {
   hidden: { opacity: 0, y: 30, scale: 0.95 },
-  show: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 350, damping: 25 } }
+  show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.2, ease: "easeOut" } }
 };
 
 export default function Dashboard() {
