@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Play } from "lucide-react";
+import { Play, Maximize2 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 const Farm3DView = dynamic(() => import("@/components/farm-3d-view"), { ssr: false });
 
@@ -148,19 +149,28 @@ export function FarmMapWidget() {
                         Live
                     </span>
                 </div>
-                <div className="flex items-center bg-slate-100 p-1 rounded-lg">
-                    <button
-                        onClick={() => setIs3DView(false)}
-                        className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${!is3DView ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
-                    >
-                        2D Map
-                    </button>
-                    <button
-                        onClick={() => setIs3DView(true)}
-                        className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${is3DView ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
-                    >
-                        3D Sim
-                    </button>
+                <div className="flex items-center gap-3">
+                    <div className="flex items-center bg-slate-100 p-1 rounded-lg">
+                        <button
+                            onClick={() => setIs3DView(false)}
+                            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${!is3DView ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
+                        >
+                            2D Map
+                        </button>
+                        <button
+                            onClick={() => setIs3DView(true)}
+                            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${is3DView ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
+                        >
+                            3D Sim
+                        </button>
+                    </div>
+                    
+                    <Link href="/farm">
+                        <Button variant="outline" size="sm" className="h-[32px] text-xs font-semibold bg-white border-slate-200 hover:bg-slate-50 text-slate-700 rounded-md">
+                            <Maximize2 className="h-3.5 w-3.5 mr-1.5 text-slate-500" />
+                            Expand & Edit
+                        </Button>
+                    </Link>
                 </div>
             </div>
 

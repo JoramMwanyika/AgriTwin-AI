@@ -58,7 +58,73 @@ export async function POST() {
             CREATE (late_blight)-[:TREATED_BY]->(t_late_blight)
         `);
 
-        // 2. Seed Supply Chain / Market Network
+        // 2. Seed Companion Planting — ANTAGONIST_TO relationships
+        // These are crops that grow poorly when planted adjacent to each other.
+        await session.run(`
+            MERGE (tomato:Crop {name: 'Tomato'})
+            MERGE (fennel:Crop {name: 'Fennel'})
+            MERGE (onion:Crop {name: 'Onion'})
+            MERGE (bean:Crop {name: 'Bean'})
+            MERGE (strawberry:Crop {name: 'Strawberry'})
+            MERGE (brassica:Crop {name: 'Brassica'})
+            MERGE (garlic:Crop {name: 'Garlic'})
+            MERGE (pea:Crop {name: 'Pea'})
+            MERGE (pepper:Crop {name: 'Pepper'})
+            MERGE (kohlrabi:Crop {name: 'Kohlrabi'})
+            MERGE (tomatoes2:Crop {name: 'Tomatoes'})
+            MERGE (sunflower:Crop {name: 'Sunflower'})
+            MERGE (potato3:Crop {name: 'Potato'})
+            MERGE (maize2:Crop {name: 'Maize'})
+            MERGE (beans2:Crop {name: 'Beans'})
+            MERGE (cabbage2:Crop {name: 'Cabbage'})
+            MERGE (watermelon2:Crop {name: 'Watermelon'})
+
+            // Tomato is inhibited by Fennel (fennel releases chemicals toxic to tomatoes)
+            MERGE (tomato)-[:ANTAGONIST_TO]->(fennel)
+            MERGE (fennel)-[:ANTAGONIST_TO]->(tomato)
+
+            // Onions stunt the growth of Beans and Peas
+            MERGE (onion)-[:ANTAGONIST_TO]->(bean)
+            MERGE (bean)-[:ANTAGONIST_TO]->(onion)
+            MERGE (onion)-[:ANTAGONIST_TO]->(pea)
+            MERGE (pea)-[:ANTAGONIST_TO]->(onion)
+            MERGE (onion)-[:ANTAGONIST_TO]->(beans2)
+            MERGE (beans2)-[:ANTAGONIST_TO]->(onion)
+
+            // Garlic inhibits Beans and Peas
+            MERGE (garlic)-[:ANTAGONIST_TO]->(bean)
+            MERGE (bean)-[:ANTAGONIST_TO]->(garlic)
+            MERGE (garlic)-[:ANTAGONIST_TO]->(beans2)
+            MERGE (beans2)-[:ANTAGONIST_TO]->(garlic)
+
+            // Brassicas (e.g. Cabbage) compete with Strawberries
+            MERGE (brassica)-[:ANTAGONIST_TO]->(strawberry)
+            MERGE (strawberry)-[:ANTAGONIST_TO]->(brassica)
+            MERGE (cabbage2)-[:ANTAGONIST_TO]->(strawberry)
+            MERGE (strawberry)-[:ANTAGONIST_TO]->(cabbage2)
+
+            // Pepper and Fennel are incompatible
+            MERGE (pepper)-[:ANTAGONIST_TO]->(fennel)
+            MERGE (fennel)-[:ANTAGONIST_TO]->(pepper)
+
+            // Kohlrabi inhibits Tomatoes
+            MERGE (kohlrabi)-[:ANTAGONIST_TO]->(tomatoes2)
+            MERGE (tomatoes2)-[:ANTAGONIST_TO]->(kohlrabi)
+
+            // Sunflower inhibits Potato
+            MERGE (sunflower)-[:ANTAGONIST_TO]->(potato3)
+            MERGE (potato3)-[:ANTAGONIST_TO]->(sunflower)
+
+            // Watermelon and Potato compete for nutrients
+            MERGE (watermelon2)-[:ANTAGONIST_TO]->(potato3)
+            MERGE (potato3)-[:ANTAGONIST_TO]->(watermelon2)
+
+            // Fennel is broadly antagonistic — also inhibits Maize
+            MERGE (fennel)-[:ANTAGONIST_TO]->(maize2)
+            MERGE (maize2)-[:ANTAGONIST_TO]->(fennel)
+        `);
+
+        // 3. Seed Supply Chain / Market Network
         await session.run(`
             // Farmers (Producers)
             CREATE (f1:Farmer {name: 'Joram Mwanyika', location: 'Nairobi', scale: 'Medium'})
@@ -87,7 +153,7 @@ export async function POST() {
             CREATE (d2)-[:SUPPLIES_TO {margin: '20%'}]->(b3)
         `);
 
-        return NextResponse.json({ message: "Neo4j Database Successfully Seeded!" });
+        return NextResponse.json({ message: "Neo4j Database Successfully Seeded with Crops, Diseases, Companion Planting Conflicts & Supply Chain!" });
     } catch (error: any) {
         console.error("Neo4j Seeding Error:", error);
         return NextResponse.json(
@@ -99,4 +165,9 @@ export async function POST() {
             await session.close();
         }
     }
+}
+
+// GET alias — allows triggering the seed from the browser or a cron job
+export async function GET() {
+    return POST();
 }

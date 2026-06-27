@@ -69,8 +69,8 @@ const colorOptions = [
 
 const structureIcons = { field: "🌱", barn: "🏭", house: "🏡", greenhouse: "🌿", irrigation: "💧", storage: "📦" };
 
-// Droppable Grid Cell
-function GridCell({ row, col }: { row: number, col: number }) {
+// Droppable Grid Cell — always mounted, visibility toggles with edit mode
+function GridCell({ row, col, visible }: { row: number, col: number, visible: boolean }) {
   const { isOver, setNodeRef } = useDroppable({
     id: `cell-${row}-${col}`,
     data: { row, col }
@@ -78,14 +78,34 @@ function GridCell({ row, col }: { row: number, col: number }) {
   return (
     <div
       ref={setNodeRef}
-      className={`rounded-3xl border-2 border-dashed transition-colors duration-300 ${isOver ? 'border-[#22c55e] bg-[#22c55e]/20' : 'border-slate-700/50 bg-[#1e293b]/20 hover:bg-[#1e293b]/40'}`}
+      className={`rounded-3xl border-2 border-dashed transition-all duration-300 ${
+        !visible
+          ? 'opacity-0'
+          : isOver
+            ? 'border-[#22c55e] bg-[#22c55e]/20'
+            : 'border-slate-700/50 bg-[#1e293b]/20 hover:bg-[#1e293b]/40'
+      }`}
       style={{ gridRow: row, gridColumn: col }}
     />
   );
 }
 
+// CSS keyframe style injected once for the conflict blink animation
+const conflictBlink = `
+  @keyframes conflict-blink {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(239,68,68,0.9), 0 0 30px rgba(239,68,68,0.5); border-color: rgba(239,68,68,0.9); }
+    50% { box-shadow: 0 0 0 1px rgba(239,68,68,0.3), 0 0 8px rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.3); }
+  }
+`;
+
 // Draggable Block
-function DraggableFarmBlock({ block, isEditing, onEdit, onDelete }: { block: FarmBlock, isEditing: boolean, onEdit: (b: FarmBlock) => void, onDelete: (id: string | number) => void }) {
+function DraggableFarmBlock({ block, isEditing, onEdit, onDelete, isConflicting }: {
+  block: FarmBlock;
+  isEditing: boolean;
+  onEdit: (b: FarmBlock) => void;
+  onDelete: (id: string | number) => void;
+  isConflicting: boolean;
+}) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `block-${block.id}`,
     data: { id: block.id, block }
@@ -94,79 +114,96 @@ function DraggableFarmBlock({ block, isEditing, onEdit, onDelete }: { block: Far
   const colors = colorOptions.find((c) => c.value === block.color) || colorOptions[0];
   const icon = structureIcons[block.structure] || "🌱";
 
-  const style = {
+  const style: React.CSSProperties = {
     gridRow: `${block.gridPosition.row} / span ${block.gridPosition.rowSpan}`,
     gridColumn: `${block.gridPosition.col} / span ${block.gridPosition.colSpan}`,
     transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
     zIndex: isDragging ? 50 : 20,
     opacity: isDragging ? 0.6 : 1,
     touchAction: 'none',
-    pointerEvents: isDragging ? 'none' : ('auto' as any)
+    pointerEvents: isDragging ? 'none' : 'auto',
+    ...(isConflicting ? { animation: 'conflict-blink 0.8s ease-in-out infinite', border: '2px solid rgba(239,68,68,0.9)' } : {}),
   };
 
   return (
-    <motion.div
-      ref={isEditing ? setNodeRef : null}
-      {...(isEditing ? listeners : {})}
-      {...(isEditing ? attributes : {})}
-      className={`${colors.bgClass} rounded-3xl border ${colors.borderClass} p-5 flex flex-col items-start justify-between relative group transition-shadow duration-400 overflow-hidden shadow-lg ${isEditing ? 'cursor-grab active:cursor-grabbing hover:ring-2 ring-white/20' : 'cursor-pointer hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.6)]'}`}
-      style={style as any}
-    >
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-t from-white/10 to-transparent transition-opacity duration-300 pointer-events-none"></div>
+    <>
+      {isConflicting && <style>{conflictBlink}</style>}
+      <motion.div
+        ref={setNodeRef}
+        {...listeners}
+        {...attributes}
+        className={`${
+          isConflicting
+            ? 'bg-red-950/60 backdrop-blur-md'
+            : colors.bgClass
+        } rounded-3xl border p-5 flex flex-col items-start justify-between relative group transition-shadow duration-400 overflow-hidden shadow-lg ${
+          isConflicting ? 'border-red-500' : colors.borderClass
+        } cursor-grab active:cursor-grabbing ${isEditing ? 'hover:ring-2 ring-white/20' : 'hover:-translate-y-0 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.6)]'}`}
+        style={style}
+      >
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-t from-white/10 to-transparent transition-opacity duration-300 pointer-events-none"></div>
 
-      <div className="flex justify-between w-full items-start relative z-10 pointer-events-none">
-        <div className={`h-2.5 w-2.5 rounded-full ${colors.indicatorClass} shadow-[0_0_10px_currentColor]`} />
-        {block.healthStatus === 'warning' && (
-          <div className="bg-red-500/90 backdrop-blur-sm text-white text-[9px] px-2 py-0.5 rounded-full font-bold animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.6)] uppercase tracking-wider border border-red-400/50">Alert</div>
-        )}
-      </div>
-
-      <div className="mt-auto relative z-10 w-full pointer-events-none">
-        <div className="text-4xl mb-3 filter drop-shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 origin-bottom-left">{icon}</div>
-        <p className="font-serif font-bold text-xl leading-tight text-white mb-1 drop-shadow-md">{block.cropName}</p>
-        <p className="text-[10px] uppercase tracking-widest opacity-80 font-medium truncate drop-shadow-sm">{block.blockName}</p>
-      </div>
-
-      {!isEditing && (
-        <div className="absolute inset-0 bg-[#0f172a]/95 backdrop-blur-xl rounded-3xl p-5 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-center text-white z-20 translate-y-4 group-hover:translate-y-0 border border-white/10 pointer-events-auto">
-          <p className="text-[10px] font-bold text-[#22c55e] uppercase tracking-widest mb-4 flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e] animate-pulse"></span>
-            Live Telemetry
-          </p>
-          {block.sensorData ? (
-            <div className="space-y-3 text-xs w-full">
-              <div className="flex justify-between items-center border-b border-white/10 pb-2">
-                <span className="text-slate-400 flex items-center gap-1.5"><Droplets className="w-3 h-3 text-cyan-400"/> Moisture</span>
-                <span className="font-bold text-slate-100 bg-white/5 px-2 py-0.5 rounded">{block.sensorData.soilMoisture}%</span>
-              </div>
-              <div className="flex justify-between items-center border-b border-white/10 pb-2">
-                <span className="text-slate-400 flex items-center gap-1.5"><Thermometer className="w-3 h-3 text-amber-400"/> Temp</span>
-                <span className="font-bold text-slate-100 bg-white/5 px-2 py-0.5 rounded">{block.sensorData.temperature}°C</span>
-              </div>
-            </div>
-          ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-center opacity-50">
-              <Wind className="w-6 h-6 mb-2" />
-              <p className="text-[10px] uppercase tracking-wider">Sensors Offline</p>
+        <div className="flex justify-between w-full items-start relative z-10 pointer-events-none">
+          <div className={`h-2.5 w-2.5 rounded-full ${isConflicting ? 'bg-red-400 shadow-[0_0_10px_rgba(239,68,68,0.8)]' : colors.indicatorClass + ' shadow-[0_0_10px_currentColor]'}`} />
+          {isConflicting && (
+            <div className="bg-red-500 text-white text-[9px] px-2 py-0.5 rounded-full font-black animate-bounce shadow-[0_0_12px_rgba(239,68,68,0.8)] uppercase tracking-wider border border-red-300/60 flex items-center gap-1">
+              <span>🚨</span> Conflict!
             </div>
           )}
-          <Button variant="outline" size="sm" className="w-full mt-5 h-8 text-xs bg-white/5 border-white/10 text-white hover:bg-white hover:text-[#0f172a] rounded-full transition-colors shadow-inner">
-            Diagnostics
-          </Button>
+          {!isConflicting && block.healthStatus === 'warning' && (
+            <div className="bg-red-500/90 backdrop-blur-sm text-white text-[9px] px-2 py-0.5 rounded-full font-bold animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.6)] uppercase tracking-wider border border-red-400/50">Alert</div>
+          )}
         </div>
-      )}
 
-      {isEditing && (
-        <div className="absolute inset-0 bg-[#0f172a]/60 backdrop-blur-sm rounded-3xl flex items-center justify-center gap-3 z-30 opacity-0 group-hover:opacity-100 transition-opacity border-2 border-dashed border-[#22c55e]/60">
-          <Button size="icon" variant="secondary" className="h-10 w-10 rounded-full bg-white text-black hover:scale-110 transition-transform shadow-lg pointer-events-auto" onPointerDown={(e) => { e.stopPropagation(); onEdit(block); }}>
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button size="icon" variant="destructive" className="h-10 w-10 rounded-full hover:scale-110 transition-transform shadow-lg pointer-events-auto" onPointerDown={(e) => { e.stopPropagation(); onDelete(block.id); }}>
-            <Trash2 className="h-4 w-4" />
-          </Button>
+        <div className="mt-auto relative z-10 w-full pointer-events-none">
+          <div className="text-4xl mb-3 filter drop-shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 origin-bottom-left">{icon}</div>
+          <p className={`font-serif font-bold text-xl leading-tight mb-1 drop-shadow-md ${isConflicting ? 'text-red-200' : 'text-white'}`}>{block.cropName}</p>
+          <p className="text-[10px] uppercase tracking-widest opacity-80 font-medium truncate drop-shadow-sm">{block.blockName}</p>
         </div>
-      )}
-    </motion.div>
+
+        {!isEditing && (
+          <div className="absolute inset-0 bg-[#0f172a]/95 backdrop-blur-xl rounded-3xl p-5 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-center text-white z-20 translate-y-4 group-hover:translate-y-0 border border-white/10 pointer-events-auto">
+            <p className={`text-[10px] font-bold ${isConflicting ? 'text-red-400' : 'text-[#22c55e]'} uppercase tracking-widest mb-4 flex items-center gap-2`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${isConflicting ? 'bg-red-400' : 'bg-[#22c55e]'} animate-pulse`}></span>
+              {isConflicting ? '⚠ Companion Conflict' : 'Live Telemetry'}
+            </p>
+            {isConflicting ? (
+              <p className="text-xs text-red-300 leading-relaxed">This crop is incompatible with an adjacent neighbour. Move it to a non-adjacent cell to resolve the conflict.</p>
+            ) : block.sensorData ? (
+              <div className="space-y-3 text-xs w-full">
+                <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                  <span className="text-slate-400 flex items-center gap-1.5"><Droplets className="w-3 h-3 text-cyan-400"/> Moisture</span>
+                  <span className="font-bold text-slate-100 bg-white/5 px-2 py-0.5 rounded">{block.sensorData.soilMoisture}%</span>
+                </div>
+                <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                  <span className="text-slate-400 flex items-center gap-1.5"><Thermometer className="w-3 h-3 text-amber-400"/> Temp</span>
+                  <span className="font-bold text-slate-100 bg-white/5 px-2 py-0.5 rounded">{block.sensorData.temperature}°C</span>
+                </div>
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center text-center opacity-50">
+                <Wind className="w-6 h-6 mb-2" />
+                <p className="text-[10px] uppercase tracking-wider">Sensors Offline</p>
+              </div>
+            )}
+            <Button variant="outline" size="sm" className="w-full mt-5 h-8 text-xs bg-white/5 border-white/10 text-white hover:bg-white hover:text-[#0f172a] rounded-full transition-colors shadow-inner">
+              Diagnostics
+            </Button>
+          </div>
+        )}
+
+        {isEditing && (
+          <div className="absolute inset-0 bg-[#0f172a]/60 backdrop-blur-sm rounded-3xl flex items-center justify-center gap-3 z-30 opacity-0 group-hover:opacity-100 transition-opacity border-2 border-dashed border-[#22c55e]/60">
+            <Button size="icon" variant="secondary" className="h-10 w-10 rounded-full bg-white text-black hover:scale-110 transition-transform shadow-lg pointer-events-auto" onPointerDown={(e) => { e.stopPropagation(); onEdit(block); }}>
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button size="icon" variant="destructive" className="h-10 w-10 rounded-full hover:scale-110 transition-transform shadow-lg pointer-events-auto" onPointerDown={(e) => { e.stopPropagation(); onDelete(block.id); }}>
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+      </motion.div>
+    </>
   );
 }
 
@@ -189,9 +226,42 @@ export default function FarmTwinPage() {
   const [weather, setWeather] = useState<any>(null);
   const [activeDragId, setActiveDragId] = useState<string | number | null>(null);
 
+  // Neo4j companion planting conflict state
+  const [conflictingBlockIds, setConflictingBlockIds] = useState<Set<string | number>>(new Set());
+
   useEffect(() => {
     loadFarmData();
   }, []);
+
+  // Check all blocks for adjacent antagonist conflicts via Neo4j
+  const checkAdjacentConflicts = async (blocks: FarmBlock[]) => {
+    if (blocks.length < 2) {
+      setConflictingBlockIds(new Set());
+      return;
+    }
+    try {
+      const res = await fetch('/api/graph/crop-conflict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ blocks: blocks.map(b => ({ id: b.id, cropName: b.cropName, gridPosition: b.gridPosition })) }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.conflictingBlockIds?.length > 0) {
+          setConflictingBlockIds(new Set(data.conflictingBlockIds));
+          data.conflicts.forEach((c: any) => {
+            toast.error(`⚠️ Companion Conflict: ${c.crop1} & ${c.crop2} should not be planted adjacent!`, {
+              duration: 5000,
+            });
+          });
+        } else {
+          setConflictingBlockIds(new Set());
+        }
+      }
+    } catch (err) {
+      // Silently fail — conflict check is non-blocking
+    }
+  };
 
   const loadFarmData = async () => {
     try {
@@ -311,6 +381,11 @@ export default function FarmTwinPage() {
     setNewBlockColor("primary");
     setAddBlockDialogOpen(false);
     toast.success(`${newBlockName} added to next available cell!`);
+    // Re-check for conflicts after adding a new block
+    setFarmBlocks(current => {
+      checkAdjacentConflicts(current);
+      return current;
+    });
   };
 
   const handleUpdateBlock = () => {
@@ -356,6 +431,8 @@ export default function FarmTwinPage() {
       const targetData = over.data.current as { row: number, col: number };
       
       if (blockId && targetData) {
+        // Auto-enter edit mode on first drag so the Save button appears
+        setIsEditingLayout(true);
         setFarmBlocks(prev => {
           const newBlocks = [...prev];
           const sourceIndex = newBlocks.findIndex(b => b.id === blockId);
@@ -392,6 +469,8 @@ export default function FarmTwinPage() {
               }
             };
           }
+          // After every drop, re-check companion planting conflicts via Neo4j
+          checkAdjacentConflicts(newBlocks);
           return newBlocks;
         });
       }
@@ -530,16 +609,23 @@ export default function FarmTwinPage() {
                     gridTemplateRows: `repeat(${layout.rows}, minmax(100px, 1fr))` 
                   }}
                 >
-                  {/* Background Droppable Grid Cells (only visible in edit mode) */}
-                  {isEditingLayout && Array.from({ length: layout.rows * layout.cols }).map((_, i) => {
+                  {/* Background Droppable Grid Cells — always mounted so drop works even outside edit mode */}
+                  {Array.from({ length: layout.rows * layout.cols }).map((_, i) => {
                     const row = Math.floor(i / layout.cols) + 1;
                     const col = (i % layout.cols) + 1;
-                    return <GridCell key={`cell-${row}-${col}`} row={row} col={col} />;
+                    return <GridCell key={`cell-${row}-${col}`} row={row} col={col} visible={isEditingLayout} />;
                   })}
 
                   <AnimatePresence>
                     {farmBlocks.map((block) => (
-                      <DraggableFarmBlock key={block.id} block={block} isEditing={isEditingLayout} onEdit={setEditingBlock} onDelete={handleDeleteBlock} />
+                      <DraggableFarmBlock
+                        key={block.id}
+                        block={block}
+                        isEditing={isEditingLayout}
+                        onEdit={setEditingBlock}
+                        onDelete={handleDeleteBlock}
+                        isConflicting={conflictingBlockIds.has(block.id)}
+                      />
                     ))}
                   </AnimatePresence>
 

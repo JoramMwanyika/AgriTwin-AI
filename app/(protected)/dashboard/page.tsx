@@ -72,7 +72,7 @@ const staggerContainer = {
 
 const fadeUpItem = {
   hidden: { opacity: 0, y: 30, scale: 0.95 },
-  show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.2, ease: "easeOut" } }
+  show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.2 } }
 };
 
 export default function Dashboard() {
@@ -140,7 +140,6 @@ export default function Dashboard() {
     <AppShell>
       <div className="space-y-8 pb-12">
         <AppPageHeader 
-            title="Command Center" 
             subtitle="Real-time insights and automated analytics for your entire operation." 
         />
 
