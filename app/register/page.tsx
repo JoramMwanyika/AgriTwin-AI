@@ -57,85 +57,87 @@ export default function RegisterPage() {
       tagline="Set up your farm in minutes — monitor blocks, get voice advice, and grow smarter."
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="name" className="text-slate-700">
-            Full Name
-          </Label>
-          <Input
-            id="name"
-            type="text"
-            placeholder="John Doe"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            required
-            className="input-mkt h-11 border-0"
-          />
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name" className="text-slate-300 font-bold text-sm">
+              Full Name
+            </Label>
+            <Input
+              id="name"
+              type="text"
+              placeholder="John Doe"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+              className="h-11 border-white/10 bg-black/40 text-white placeholder:text-slate-500 focus-visible:ring-[#00e676] rounded-xl px-4 transition-all"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-slate-300 font-bold text-sm">
+              Email Address
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="farmer@example.com"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              required
+              className="h-11 border-white/10 bg-black/40 text-white placeholder:text-slate-500 focus-visible:ring-[#00e676] rounded-xl px-4 transition-all"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password" className="text-slate-300 font-bold text-sm">
+              Password
+            </Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              required
+              minLength={8}
+              className="h-11 border-white/10 bg-black/40 text-white placeholder:text-slate-500 focus-visible:ring-[#00e676] rounded-xl px-4 transition-all"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword" className="text-slate-300 font-bold text-sm">
+              Confirm Password
+            </Label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              placeholder="••••••••"
+              value={formData.confirmPassword}
+              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+              required
+              minLength={8}
+              className="h-11 border-white/10 bg-black/40 text-white placeholder:text-slate-500 focus-visible:ring-[#00e676] rounded-xl px-4 transition-all"
+            />
+          </div>
+          <div className="flex items-start gap-3 py-1 text-sm pt-2">
+            <input
+              type="checkbox"
+              required
+              className="mt-1 rounded border-white/20 bg-black/40 text-[#00e676] focus:ring-[#00e676] outline-none"
+            />
+            <span className="text-slate-400 font-medium">
+              I agree to the{" "}
+              <Link href="#" className="font-bold text-[#00e676] hover:text-[#00c853]">
+                Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link href="#" className="font-bold text-[#00e676] hover:text-[#00c853]">
+                Privacy Policy
+              </Link>
+            </span>
+          </div>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="email" className="text-slate-700">
-            Email
-          </Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="farmer@example.com"
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            required
-            className="input-mkt h-11 border-0"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="password" className="text-slate-700">
-            Password
-          </Label>
-          <Input
-            id="password"
-            type="password"
-            placeholder="••••••••"
-            value={formData.password}
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            required
-            minLength={8}
-            className="input-mkt h-11 border-0"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="confirmPassword" className="text-slate-700">
-            Confirm Password
-          </Label>
-          <Input
-            id="confirmPassword"
-            type="password"
-            placeholder="••••••••"
-            value={formData.confirmPassword}
-            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-            required
-            minLength={8}
-            className="input-mkt h-11 border-0"
-          />
-        </div>
-        <div className="flex items-start gap-3 py-1 text-sm">
-          <input
-            type="checkbox"
-            required
-            className="mt-1 rounded border-slate-600 bg-slate-100/40 text-[#0f766e] focus:ring-[#0f766e]"
-          />
-          <span className="text-slate-600">
-            I agree to the{" "}
-            <Link href="#" className="font-medium text-[#0f766e] hover:text-[#00c853]">
-              Terms of Service
-            </Link>{" "}
-            and{" "}
-            <Link href="#" className="font-medium text-[#0f766e] hover:text-[#00c853]">
-              Privacy Policy
-            </Link>
-          </span>
-        </div>
-        <button type="submit" className="btn-primary flex h-12 w-full items-center justify-center gap-2" disabled={isLoading}>
+        <button type="submit" className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#00e676] text-black font-extrabold hover:bg-[#00c853] hover:shadow-[0_0_20px_rgba(0,230,118,0.3)] hover:-translate-y-0.5 transition-all duration-300 mt-2" disabled={isLoading}>
           {isLoading ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" /> Creating account...
+              <Loader2 className="h-4 w-4 animate-spin text-black/60" /> Creating account...
             </>
           ) : (
             <>
@@ -143,19 +145,7 @@ export default function RegisterPage() {
             </>
           )}
         </button>
-        <p className="rounded-lg border border-cyan-500/20 bg-cyan-500/5 p-3 text-center text-sm text-cyan-200/90">
-          Want to try first? Use the{" "}
-          <Link href="/login" className="font-semibold text-cyan-400 underline decoration-dotted underline-offset-4 hover:text-cyan-300">
-            demo account
-          </Link>
-        </p>
       </form>
-      <p className="mt-6 text-center text-sm text-slate-600">
-        Already have an account?{" "}
-        <Link href="/login" className="font-semibold text-[#0f766e] hover:text-[#00c853]">
-          Sign in
-        </Link>
-      </p>
     </AuthLayout>
   )
 }

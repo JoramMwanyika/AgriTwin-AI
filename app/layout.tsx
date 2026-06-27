@@ -1,5 +1,5 @@
 import type React from "react"
-import { Roboto } from "next/font/google"
+import { Plus_Jakarta_Sans } from "next/font/google"
 import "./globals.css"
 import { Toaster } from "@/components/ui/sonner"
 import { AuthProvider } from "@/components/auth-provider"
@@ -7,7 +7,7 @@ import { ChatProvider } from "@/components/chat-provider"
 import { ChatBotWidget } from "@/components/chat-bot-widget"
 import { CronPinger } from "@/components/cron-pinger"
 
-const roboto = Roboto({ weight: ['400', '500', '700'], subsets: ["latin"], variable: "--font-sans" })
+const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-sans" })
 
 export default function RootLayout({
   children,
@@ -15,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={roboto.variable}>
+    <html lang="en" suppressHydrationWarning className={jakarta.variable}>
       <body suppressHydrationWarning className="font-sans antialiased">
         <AuthProvider>
           <ChatProvider>
