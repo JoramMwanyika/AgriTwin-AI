@@ -40,44 +40,46 @@ export default function LoginPage() {
 
   return (
     <AuthLayout title="Welcome back" subtitle="Sign in to access your digital twin and farm insights.">
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="space-y-2">
-          <Label htmlFor="email" className="text-slate-300">
-            Email
-          </Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="farmer@example.com"
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            required
-            className="input-mkt h-12 border-0"
-          />
-        </div>
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password" className="text-slate-300">
-              Password
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-slate-300 font-bold text-sm">
+              Email Address
             </Label>
-            <Link href="#" className="text-xs font-medium text-[#00e676] hover:text-[#00c853]">
-              Forgot password?
-            </Link>
+            <Input
+              id="email"
+              type="email"
+              placeholder="farmer@example.com"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              required
+              className="h-12 border-white/10 bg-black/40 text-white placeholder:text-slate-500 focus-visible:ring-[#00e676] rounded-xl px-4 transition-all"
+            />
           </div>
-          <Input
-            id="password"
-            type="password"
-            placeholder="••••••••"
-            value={formData.password}
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            required
-            className="input-mkt h-12 border-0"
-          />
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password" className="text-slate-300 font-bold text-sm">
+                Password
+              </Label>
+              <Link href="#" className="text-xs font-bold text-[#00e676] hover:text-[#00c853] hover:underline transition-colors">
+                Forgot password?
+              </Link>
+            </div>
+            <Input
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              required
+              className="h-12 border-white/10 bg-black/40 text-white placeholder:text-slate-500 focus-visible:ring-[#00e676] rounded-xl px-4 transition-all"
+            />
+          </div>
         </div>
-        <button type="submit" className="btn-primary flex h-12 w-full items-center justify-center gap-2" disabled={isLoading}>
+        <button type="submit" className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#00e676] text-black font-extrabold hover:bg-[#00c853] hover:shadow-[0_0_20px_rgba(0,230,118,0.3)] hover:-translate-y-0.5 transition-all duration-300" disabled={isLoading}>
           {isLoading ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" /> Signing in...
+              <Loader2 className="h-4 w-4 animate-spin text-black/60" /> Signing in...
             </>
           ) : (
             <>
@@ -85,14 +87,13 @@ export default function LoginPage() {
             </>
           )}
         </button>
-
+        <p className="pt-6 text-center text-sm font-medium text-slate-400">
+          Don&apos;t have an account?{" "}
+          <Link href="/register" className="font-bold text-[#00e676] hover:text-[#00c853] transition-colors hover:underline">
+            Sign up for free
+          </Link>
+        </p>
       </form>
-      <p className="mt-6 text-center text-sm text-slate-400">
-        Don&apos;t have an account?{" "}
-        <Link href="/register" className="font-semibold text-[#00e676] hover:text-[#00c853]">
-          Sign up
-        </Link>
-      </p>
     </AuthLayout>
   )
 }

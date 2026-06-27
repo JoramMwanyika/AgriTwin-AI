@@ -148,7 +148,7 @@ export async function POST(req: NextRequest) {
         });
 
         const completion = await runtimeFeatherless.chat.completions.create({
-          model: "Qwen/Qwen2.5-72B-Instruct",
+          model: "meta-llama/Meta-Llama-3.1-8B-Instruct",
           messages: apiMessages as any, // Bypass strict type checking for basic array
           temperature: language === "en" ? 0.5 : 0.35,
           max_tokens: 1500,

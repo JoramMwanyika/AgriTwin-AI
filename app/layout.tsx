@@ -1,4 +1,5 @@
 import type React from "react"
+import { Plus_Jakarta_Sans } from "next/font/google"
 import "./globals.css"
 import { Toaster } from "@/components/ui/sonner"
 import { AuthProvider } from "@/components/auth-provider"
@@ -6,14 +7,16 @@ import { ChatProvider } from "@/components/chat-provider"
 import { ChatBotWidget } from "@/components/chat-bot-widget"
 import { CronPinger } from "@/components/cron-pinger"
 
+const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-sans" })
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={jakarta.variable}>
+      <body suppressHydrationWarning className="font-sans antialiased">
         <AuthProvider>
           <ChatProvider>
             {children}
