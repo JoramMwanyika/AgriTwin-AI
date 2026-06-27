@@ -138,17 +138,15 @@ export async function POST(req: NextRequest) {
 
     const FEATHERLESS_API_KEY = process.env.FEATHERLESS_API_KEY;
 
-    if (FEATHERLESS_API_KEY) {
+    if (process.env.FEATHERLESS_API_KEY) {
       try {
         console.log(`[v0] Trying Featherless API Chat...`);
         
-        const runtimeFeatherless = new OpenAI({
-          baseURL: 'https://api.featherless.ai/v1',
-          apiKey: FEATHERLESS_API_KEY, 
-        });
+        // Use the shared openai instance from lib/ai which is already connected to Featherless
+        const { openai } = await import('@/lib/ai');
 
-        const completion = await runtimeFeatherless.chat.completions.create({
-          model: "meta-llama/Meta-Llama-3.1-8B-Instruct",
+        const completion = await openai.chat.completions.create({
+          model: "Qwen/Qwen2.5-7B-Instruct",
           messages: apiMessages as any, // Bypass strict type checking for basic array
           temperature: language === "en" ? 0.5 : 0.35,
           max_tokens: 1500,
