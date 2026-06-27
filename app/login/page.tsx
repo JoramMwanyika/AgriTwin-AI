@@ -42,7 +42,7 @@ export default function LoginPage() {
     <AuthLayout title="Welcome back" subtitle="Sign in to access your digital twin and farm insights.">
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-slate-300">
+          <Label htmlFor="email" className="text-slate-700">
             Email
           </Label>
           <Input
@@ -57,10 +57,10 @@ export default function LoginPage() {
         </div>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password" className="text-slate-300">
+            <Label htmlFor="password" className="text-slate-700">
               Password
             </Label>
-            <Link href="#" className="text-xs font-medium text-[#00e676] hover:text-[#00c853]">
+            <Link href="#" className="text-xs font-medium text-[#0f766e] hover:text-[#00c853]">
               Forgot password?
             </Link>
           </div>
@@ -87,9 +87,9 @@ export default function LoginPage() {
         </button>
 
       </form>
-      <p className="mt-6 text-center text-sm text-slate-400">
+      <p className="mt-6 text-center text-sm text-slate-600">
         Don&apos;t have an account?{" "}
-        <Link href="/register" className="font-semibold text-[#00e676] hover:text-[#00c853]">
+        <Link href="/register" className="font-semibold text-[#0f766e] hover:text-[#00c853]">
           Sign up
         </Link>
       </p>

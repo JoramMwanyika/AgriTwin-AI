@@ -58,7 +58,7 @@ export default function RegisterPage() {
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="name" className="text-slate-300">
+          <Label htmlFor="name" className="text-slate-700">
             Full Name
           </Label>
           <Input
@@ -72,7 +72,7 @@ export default function RegisterPage() {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-slate-300">
+          <Label htmlFor="email" className="text-slate-700">
             Email
           </Label>
           <Input
@@ -86,7 +86,7 @@ export default function RegisterPage() {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="password" className="text-slate-300">
+          <Label htmlFor="password" className="text-slate-700">
             Password
           </Label>
           <Input
@@ -101,7 +101,7 @@ export default function RegisterPage() {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="confirmPassword" className="text-slate-300">
+          <Label htmlFor="confirmPassword" className="text-slate-700">
             Confirm Password
           </Label>
           <Input
@@ -119,15 +119,15 @@ export default function RegisterPage() {
           <input
             type="checkbox"
             required
-            className="mt-1 rounded border-slate-600 bg-black/40 text-[#00e676] focus:ring-[#00e676]"
+            className="mt-1 rounded border-slate-600 bg-slate-100/40 text-[#0f766e] focus:ring-[#0f766e]"
           />
-          <span className="text-slate-400">
+          <span className="text-slate-600">
             I agree to the{" "}
-            <Link href="#" className="font-medium text-[#00e676] hover:text-[#00c853]">
+            <Link href="#" className="font-medium text-[#0f766e] hover:text-[#00c853]">
               Terms of Service
             </Link>{" "}
             and{" "}
-            <Link href="#" className="font-medium text-[#00e676] hover:text-[#00c853]">
+            <Link href="#" className="font-medium text-[#0f766e] hover:text-[#00c853]">
               Privacy Policy
             </Link>
           </span>
@@ -150,9 +150,9 @@ export default function RegisterPage() {
           </Link>
         </p>
       </form>
-      <p className="mt-6 text-center text-sm text-slate-400">
+      <p className="mt-6 text-center text-sm text-slate-600">
         Already have an account?{" "}
-        <Link href="/login" className="font-semibold text-[#00e676] hover:text-[#00c853]">
+        <Link href="/login" className="font-semibold text-[#0f766e] hover:text-[#00c853]">
           Sign in
         </Link>
       </p>

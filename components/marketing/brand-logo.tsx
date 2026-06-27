@@ -1,14 +1,14 @@
-import { Leaf } from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 
 export function BrandLogo({ className, href = "/" }: { className?: string; href?: string }) {
   return (
     <Link href={href} className={cn("inline-flex items-center gap-2.5 group", className)}>
-      <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#00e676]/30 bg-[#00e676]/10 shadow-[0_0_20px_rgba(0,230,118,0.25)] transition-transform group-hover:scale-105">
-        <Leaf className="h-5 w-5 fill-[#00e676] text-[#00e676]" />
+      <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-white shadow-sm transition-transform group-hover:scale-105">
+        <Image src="/brand-logo-realistic.png" alt="AgriTwin Logo" width={40} height={40} className="object-cover" />
       </div>
-      <span className="text-lg font-bold tracking-tight text-white">AgriTwin</span>
+      <span className="text-lg font-bold tracking-tight text-foreground">AgriTwin</span>
     </Link>
   )
 }

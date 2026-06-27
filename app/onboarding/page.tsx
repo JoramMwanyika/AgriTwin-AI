@@ -8,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Map, LayoutGrid, ArrowRight, Plus, Trash2, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { motion, AnimatePresence } from "framer-motion"
-import { GlowBackground } from "@/components/marketing/glow-background"
 import { BrandLogo } from "@/components/marketing/brand-logo"
 
 type Block = { id: number; name: string; crop: string; size: string }
@@ -71,8 +70,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="marketing-theme relative min-h-screen bg-[#050a0e] text-white">
-      <GlowBackground />
+    <div className="marketing-theme relative min-h-screen bg-slate-50 text-slate-900">
       <div className="relative z-10 mx-auto flex min-h-screen max-w-3xl flex-col px-6 py-10">
         <BrandLogo className="mb-10" />
 
@@ -84,21 +82,21 @@ export default function OnboardingPage() {
                 <div
                   className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold transition-all ${
                     step >= s.num
-                      ? "border-[#00e676] bg-[#00e676] text-[#050a0e] shadow-[0_0_20px_rgba(0,230,118,0.35)]"
+                      ? "border-[#0f766e] bg-[#0f766e] text-white shadow-[0_0_20px_rgba(0,230,118,0.35)]"
                       : "border-slate-700 bg-slate-900 text-slate-500"
                   }`}
                 >
                   {s.num}
                 </div>
                 <div className="hidden min-w-0 sm:block">
-                  <p className={`text-xs font-medium ${step >= s.num ? "text-[#00e676]" : "text-slate-500"}`}>
+                  <p className={`text-xs font-medium ${step >= s.num ? "text-[#0f766e]" : "text-slate-500"}`}>
                     Step {s.num}
                   </p>
                   <p className="truncate text-sm font-semibold">{s.label}</p>
                 </div>
                 {i < steps.length - 1 && (
                   <div
-                    className={`mx-2 hidden h-0.5 flex-1 sm:block ${step > s.num ? "bg-[#00e676]" : "bg-slate-800"}`}
+                    className={`mx-2 hidden h-0.5 flex-1 sm:block ${step > s.num ? "bg-[#0f766e]" : "bg-slate-800"}`}
                   />
                 )}
               </div>
@@ -106,7 +104,7 @@ export default function OnboardingPage() {
           </div>
           <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-slate-800">
             <motion.div
-              className="h-full rounded-full bg-[#00e676] shadow-[0_0_12px_rgba(0,230,118,0.5)]"
+              className="h-full rounded-full bg-[#0f766e] shadow-[0_0_12px_rgba(0,230,118,0.5)]"
               initial={false}
               animate={{ width: step === 1 ? "50%" : "100%" }}
               transition={{ duration: 0.4 }}
@@ -114,18 +112,18 @@ export default function OnboardingPage() {
           </div>
         </div>
 
-        <div className="glass-card flex flex-1 flex-col border-white/10 p-6 sm:p-8">
+        <div className="glass-card flex flex-1 flex-col border-slate-300/10 p-6 sm:p-8">
           <div className="mb-6 flex items-center gap-3">
             {step === 1 ? (
-              <Map className="h-6 w-6 text-[#00e676]" />
+              <Map className="h-6 w-6 text-[#0f766e]" />
             ) : (
-              <LayoutGrid className="h-6 w-6 text-[#00e676]" />
+              <LayoutGrid className="h-6 w-6 text-[#0f766e]" />
             )}
             <div>
               <h1 className="text-xl font-bold sm:text-2xl">
                 {step === 1 ? "Tell us about your farm" : "Map your fields"}
               </h1>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-slate-600">
                 {step === 1
                   ? "We'll use this to create your digital twin."
                   : "Add crop blocks to visualize your farm layout."}
@@ -144,7 +142,7 @@ export default function OnboardingPage() {
                   className="space-y-4"
                 >
                   <div className="space-y-2">
-                    <Label className="text-slate-300">Farm Name</Label>
+                    <Label className="text-slate-700">Farm Name</Label>
                     <Input
                       value={farmName}
                       onChange={(e) => setFarmName(e.target.value)}
@@ -153,7 +151,7 @@ export default function OnboardingPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-slate-300">Location (optional)</Label>
+                    <Label className="text-slate-700">Location (optional)</Label>
                     <Input
                       value={farmLocation}
                       onChange={(e) => setFarmLocation(e.target.value)}
@@ -163,7 +161,7 @@ export default function OnboardingPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-slate-300">Total Size</Label>
+                      <Label className="text-slate-700">Total Size</Label>
                       <Input
                         type="number"
                         value={farmSize}
@@ -173,9 +171,9 @@ export default function OnboardingPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-slate-300">Unit</Label>
+                      <Label className="text-slate-700">Unit</Label>
                       <Select value={sizeUnit} onValueChange={setSizeUnit}>
-                        <SelectTrigger className="input-mkt h-11 border-0 text-white">
+                        <SelectTrigger className="input-mkt h-11 border-0 text-slate-900">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -196,8 +194,8 @@ export default function OnboardingPage() {
                   exit={{ opacity: 0, x: 16 }}
                   className="space-y-5"
                 >
-                  <div className="rounded-xl border border-white/10 bg-black/30 p-4">
-                    <div className="flex justify-between text-xs text-slate-400">
+                  <div className="rounded-xl border border-slate-300/10 bg-slate-100/30 p-4">
+                    <div className="flex justify-between text-xs text-slate-600">
                       <span>
                         Farm: {farmSize} {sizeUnit}
                       </span>
@@ -207,7 +205,7 @@ export default function OnboardingPage() {
                     </div>
                     <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-800">
                       <div
-                        className={`h-full transition-all duration-500 ${coveragePercent > 100 ? "bg-red-500" : "bg-[#00e676]"}`}
+                        className={`h-full transition-all duration-500 ${coveragePercent > 100 ? "bg-red-500" : "bg-[#0f766e]"}`}
                         style={{ width: `${Math.min(coveragePercent, 100)}%` }}
                       />
                     </div>
@@ -245,7 +243,7 @@ export default function OnboardingPage() {
                     {blocks.map((block) => (
                       <div
                         key={block.id}
-                        className="flex items-center justify-between rounded-xl border border-white/10 bg-black/25 px-4 py-3"
+                        className="flex items-center justify-between rounded-xl border border-slate-300/10 bg-slate-100/25 px-4 py-3"
                       >
                         <div>
                           <p className="font-medium">{block.name}</p>
@@ -273,13 +271,13 @@ export default function OnboardingPage() {
             </AnimatePresence>
           </div>
 
-          <div className="mt-8 flex items-center justify-between border-t border-white/10 pt-6">
+          <div className="mt-8 flex items-center justify-between border-t border-slate-300/10 pt-6">
             {step === 1 ? (
-              <button type="button" onClick={() => router.push("/")} className="text-sm text-slate-400 hover:text-white">
+              <button type="button" onClick={() => router.push("/")} className="text-sm text-slate-600 hover:text-slate-900">
                 Cancel
               </button>
             ) : (
-              <button type="button" onClick={() => setStep(1)} className="text-sm text-slate-400 hover:text-white">
+              <button type="button" onClick={() => setStep(1)} className="text-sm text-slate-600 hover:text-slate-900">
                 Back
               </button>
             )}
