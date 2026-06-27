@@ -34,15 +34,14 @@ const bottomNav = [
 ];
 
 const staggerVariants = {
-  hidden: { opacity: 0, x: -20 },
+  hidden: { opacity: 0, x: -10 },
   visible: (i: number) => ({
     opacity: 1,
     x: 0,
     transition: {
-      delay: i * 0.05,
-      type: "spring",
-      stiffness: 300,
-      damping: 24,
+      delay: i * 0.02,
+      duration: 0.2,
+      ease: "easeOut",
     },
   }),
 };
@@ -70,9 +69,6 @@ export function AppSidebar() {
         </motion.div>
         <div className="flex flex-col">
           <span className="font-extrabold text-2xl bg-gradient-to-br from-slate-900 to-slate-700 bg-clip-text text-transparent tracking-tighter">AgriTwin</span>
-          <span className="text-[10px] font-bold text-emerald-600 tracking-widest uppercase flex items-center gap-1">
-             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live System
-          </span>
         </div>
       </div>
 
@@ -102,13 +98,13 @@ export function AppSidebar() {
                       layoutId="active-nav-bg"
                       className="absolute inset-0 bg-gradient-to-r from-emerald-100/80 to-emerald-50/30 border border-emerald-200/50 rounded-2xl -z-10"
                       initial={false}
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      transition={{ duration: 0.2, ease: "easeInOut" }}
                     />
                     <motion.div
                       layoutId="active-nav-indicator"
                       className="absolute left-0 top-1/2 -translate-y-1/2 h-1/2 w-1.5 bg-emerald-500 rounded-r-full shadow-[0_0_10px_rgba(16,185,129,0.5)] -z-10"
                       initial={false}
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      transition={{ duration: 0.2, ease: "easeInOut" }}
                     />
                   </>
                 )}

@@ -13,11 +13,7 @@ export function BrandLogo({ className, href = "/" }: { className?: string; href?
         <span className="text-[26px] font-black tracking-tighter bg-gradient-to-br from-white via-slate-100 to-slate-400 bg-clip-text text-transparent group-hover:from-emerald-300 group-hover:to-teal-500 transition-all duration-500 leading-none">
           AgriTwin
         </span>
-        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-emerald-500/80 group-hover:text-emerald-400 transition-colors mt-1">Autonomous</span>
       </div>
-      {/* Subtle glowing dot */}
-      <span className="absolute -right-1 top-1 h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,1)] animate-ping" />
-      <span className="absolute -right-1 top-1 h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,1)]" />
     </Link>
   )
 }
