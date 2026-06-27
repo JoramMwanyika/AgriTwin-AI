@@ -1,8 +1,9 @@
 "use client";
 
-import React, { Suspense } from "react";
+import React, { Suspense, useState, useRef, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Environment, Grid, ContactShadows } from "@react-three/drei";
+import { Maximize2, Minimize2 } from "lucide-react";
 import FarmBlock3D from "./farm-block-3d";
 
 type FarmBlock = {
@@ -31,9 +32,29 @@ const Farm3DView = ({ blocks, onBlockClick }: Farm3DViewProps) => {
     // Grid settings
     const gridSize = 4; // Assuming a 4x4 or 5x5 grid
     const spacing = 2.5; // Space between blocks
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    }, []);
+
+    const toggleFullscreen = () => {
+        if (!document.fullscreenElement) {
+            containerRef.current?.requestFullscreen().catch(err => {
+                console.error(`Error attempting to enable fullscreen: ${err.message}`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    };
 
     return (
-        <div className="w-full h-[600px] rounded-3xl overflow-hidden border border-[#1e293b] shadow-2xl relative bg-[#0f172a]">
+        <div ref={containerRef} className="w-full h-[600px] rounded-3xl overflow-hidden border border-[#1e293b] shadow-2xl relative bg-[#0f172a]">
             <Canvas shadows camera={{ position: [12, 12, 12], fov: 45 }}>
                 {/* Dark Background */}
                 <color attach="background" args={['#0f172a']} />
@@ -108,6 +129,15 @@ const Farm3DView = ({ blocks, onBlockClick }: Farm3DViewProps) => {
             <div className="absolute top-4 left-4 bg-black/40 backdrop-blur border border-white/10 px-4 py-2 rounded-xl text-xs font-medium text-white pointer-events-none">
                 <span className="text-[#c0ff01] font-bold">LIVE Digital Twin</span> • System Online
             </div>
+            
+            <button 
+                onClick={toggleFullscreen}
+                className="absolute top-4 right-4 bg-black/50 hover:bg-[#22c55e]/80 backdrop-blur border border-white/20 p-2.5 rounded-xl text-white transition-all z-50 pointer-events-auto shadow-lg"
+                title="Toggle Fullscreen"
+            >
+                {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+            </button>
+
             <div className="absolute bottom-4 right-4 text-[10px] text-gray-500 font-mono pointer-events-none">
                 lat: -1.286 • lon: 36.817
             </div>

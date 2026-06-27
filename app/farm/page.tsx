@@ -100,7 +100,8 @@ function DraggableFarmBlock({ block, isEditing, onEdit, onDelete }: { block: Far
     transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
     zIndex: isDragging ? 50 : 20,
     opacity: isDragging ? 0.6 : 1,
-    touchAction: 'none'
+    touchAction: 'none',
+    pointerEvents: isDragging ? 'none' : ('auto' as any)
   };
 
   return (
@@ -265,26 +266,51 @@ export default function FarmTwinPage() {
     }
   };
 
+  // Find the next available empty cell, scanning left-to-right, top-to-bottom
+  const findNextEmptyCell = (currentBlocks: FarmBlock[], currentLayout: { rows: number; cols: number }) => {
+    const occupied = new Set(
+      currentBlocks.map(b => `${b.gridPosition.row}-${b.gridPosition.col}`)
+    );
+    for (let r = 1; r <= currentLayout.rows; r++) {
+      for (let c = 1; c <= currentLayout.cols; c++) {
+        if (!occupied.has(`${r}-${c}`)) {
+          return { row: r, col: c };
+        }
+      }
+    }
+    // Grid is full — expand with a new row
+    return { row: currentLayout.rows + 1, col: 1, expandRow: true };
+  };
+
   const handleAddBlock = () => {
     if (!newCropName.trim() || !newBlockName.trim()) {
       toast.error("Please fill in all fields");
       return;
     }
-    const newBlock: FarmBlock = {
-      id: `temp-${Date.now()}`,
-      cropName: newCropName,
-      blockName: newBlockName,
-      color: newBlockColor,
-      progress: 0,
-      gridPosition: { row: layout.rows, col: layout.cols, rowSpan: 1, colSpan: 1 },
-      structure: 'field',
-    };
-    setFarmBlocks(prev => [...prev, newBlock]);
+
+    setFarmBlocks(prev => {
+      const nextCell = findNextEmptyCell(prev, layout);
+      // Auto-expand grid if needed
+      if ((nextCell as any).expandRow) {
+        setLayout(l => ({ ...l, rows: l.rows + 1 }));
+      }
+      const newBlock: FarmBlock = {
+        id: `temp-${Date.now()}`,
+        cropName: newCropName,
+        blockName: newBlockName,
+        color: newBlockColor,
+        progress: 0,
+        gridPosition: { row: nextCell.row, col: nextCell.col, rowSpan: 1, colSpan: 1 },
+        structure: 'field',
+      };
+      return [...prev, newBlock];
+    });
+
     setNewCropName("");
     setNewBlockName("");
     setNewBlockColor("primary");
     setAddBlockDialogOpen(false);
-    toast.success(`${newBlockName} added to layout! (Not saved yet)`);
+    toast.success(`${newBlockName} added to next available cell!`);
   };
 
   const handleUpdateBlock = () => {
@@ -330,19 +356,44 @@ export default function FarmTwinPage() {
       const targetData = over.data.current as { row: number, col: number };
       
       if (blockId && targetData) {
-        setFarmBlocks(prev => prev.map(b => {
-          if (b.id === blockId) {
-            return {
-              ...b,
+        setFarmBlocks(prev => {
+          const newBlocks = [...prev];
+          const sourceIndex = newBlocks.findIndex(b => b.id === blockId);
+          if (sourceIndex === -1) return prev;
+          
+          const sourceBlock = newBlocks[sourceIndex];
+          
+          // Check if there is already a block at the target destination
+          const existingBlockIndex = newBlocks.findIndex(b => 
+            b.gridPosition.row === targetData.row && 
+            b.gridPosition.col === targetData.col && 
+            b.id !== blockId
+          );
+
+          if (existingBlockIndex !== -1) {
+            // Swap positions
+            const tempPos = { ...sourceBlock.gridPosition };
+            newBlocks[sourceIndex] = { 
+              ...sourceBlock, 
+              gridPosition: { ...newBlocks[existingBlockIndex].gridPosition } 
+            };
+            newBlocks[existingBlockIndex] = { 
+              ...newBlocks[existingBlockIndex], 
+              gridPosition: tempPos 
+            };
+          } else {
+            // Just move to empty cell
+            newBlocks[sourceIndex] = {
+              ...sourceBlock,
               gridPosition: {
-                ...b.gridPosition,
+                ...sourceBlock.gridPosition,
                 row: targetData.row,
                 col: targetData.col
               }
             };
           }
-          return b;
-        }));
+          return newBlocks;
+        });
       }
     }
   };
