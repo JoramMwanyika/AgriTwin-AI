@@ -81,7 +81,7 @@ const structureIcons: Record<string, string> = {
 
 export function FarmMapWidget() {
     const [farmBlocks, setFarmBlocks] = useState<FarmBlock[]>([]);
-    const [is3DView, setIs3DView] = useState(false);
+    const [is3DView, setIs3DView] = useState(true);
     const [conflictingBlockIds, setConflictingBlockIds] = useState<Set<string | number>>(new Set());
 
     useEffect(() => {

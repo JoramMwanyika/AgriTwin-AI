@@ -6,6 +6,7 @@ import { useChat } from "@/components/chat-provider";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import Script from "next/script";
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -19,9 +20,22 @@ export function AppPageHeader({
 }: {
   subtitle?: string;
 }) {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { toggleChat } = useChat();
   const firstName = session?.user?.name?.split(" ")[0] || "Farmer";
+
+  const handleVoiceAssistantClick = () => {
+    const widget = document.querySelector("elevenlabs-convai");
+    if (widget && widget.shadowRoot) {
+      const btn = widget.shadowRoot.querySelector("button");
+      if (btn) {
+        btn.click();
+        return;
+      }
+    }
+    // Fallback if widget isn't loaded
+    toggleChat();
+  };
 
   const [weather, setWeather] = useState<{ temp: number; name: string; condition: string; rainProb?: number } | null>(null);
 
@@ -68,7 +82,7 @@ export function AppPageHeader({
       <div className="flex items-center gap-4 shrink-0 mt-2 sm:mt-0">
         <motion.button
           type="button"
-          onClick={toggleChat}
+          onClick={handleVoiceAssistantClick}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           className="group relative inline-flex items-center overflow-hidden rounded-full p-[1.5px] shadow-md transition-shadow hover:shadow-[0_0_20px_rgba(16,185,129,0.25)] ring-1 ring-slate-200/50"
@@ -102,6 +116,14 @@ export function AppPageHeader({
           </span>
         </Link>
       </div>
+
+      {status === "authenticated" && (
+        <>
+          {/* @ts-ignore */}
+          <elevenlabs-convai agent-id="agent_2201kw4r61tmf8mvppbqxdeeppjs"></elevenlabs-convai>
+          <Script src="https://unpkg.com/@elevenlabs/convai-widget-embed" strategy="lazyOnload" />
+        </>
+      )}
     </div>
   );
 }

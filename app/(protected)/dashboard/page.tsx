@@ -260,8 +260,8 @@ export default function Dashboard() {
         </motion.section>
 
         {/* MIDDLE ROW: MAP AND RECOMMENDATIONS */}
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 flex flex-col h-full min-h-[450px]">
+        <section className="flex flex-col gap-6">
+          <div className="flex flex-col h-full min-h-[450px]">
              <div className="bg-white p-2 rounded-[32px] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-full w-full overflow-hidden">
                 <FarmMapWidget />
              </div>
