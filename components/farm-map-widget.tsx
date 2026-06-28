@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Play, Maximize2 } from "lucide-react";
+import { Play, Maximize2, Map, X, Minimize2 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
@@ -82,6 +82,8 @@ const structureIcons: Record<string, string> = {
 export function FarmMapWidget() {
     const [farmBlocks, setFarmBlocks] = useState<FarmBlock[]>([]);
     const [is3DView, setIs3DView] = useState(true);
+    const [isMapView, setIsMapView] = useState(false);
+    const [isMapFullscreen, setIsMapFullscreen] = useState(false);
     const [conflictingBlockIds, setConflictingBlockIds] = useState<Set<string | number>>(new Set());
 
     useEffect(() => {
@@ -170,30 +172,95 @@ export function FarmMapWidget() {
                 <div className="flex items-center gap-3">
                     <div className="flex items-center bg-slate-100 p-1 rounded-lg">
                         <button
-                            onClick={() => setIs3DView(false)}
-                            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${!is3DView ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
+                            onClick={() => { setIs3DView(false); setIsMapView(false); }}
+                            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${!is3DView && !isMapView ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
                         >
                             2D Map
                         </button>
                         <button
-                            onClick={() => setIs3DView(true)}
-                            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${is3DView ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
+                            onClick={() => { setIs3DView(true); setIsMapView(false); }}
+                            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${is3DView && !isMapView ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
                         >
                             3D Sim
+                        </button>
+                        <button
+                            onClick={() => setIsMapView(!isMapView)}
+                            className={`flex items-center gap-1.5 px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                                isMapView ? 'bg-white shadow-sm text-emerald-700' : 'text-slate-500 hover:text-slate-700'
+                            }`}
+                        >
+                            <Map className="h-3.5 w-3.5" />
+                            Map
                         </button>
                     </div>
                     
                     <Link href="/farm">
                         <Button variant="outline" size="sm" className="h-[32px] text-xs font-semibold bg-white border-slate-200 hover:bg-slate-50 text-slate-700 rounded-md">
                             <Maximize2 className="h-3.5 w-3.5 mr-1.5 text-slate-500" />
-                            Expand & Edit
+                            Expand &amp; Edit
                         </Button>
                     </Link>
                 </div>
             </div>
 
             <div className="relative w-full h-[320px] md:h-[400px] rounded-xl overflow-hidden bg-gradient-to-b from-sky-50 to-emerald-50/30 border border-slate-200">
-                {is3DView ? (
+                {isMapView ? (
+                    <>
+                        {/* Map iframe embedded inside the widget */}
+                        <iframe
+                            src="https://dream9.netlify.app/map"
+                            className="w-full h-full border-0"
+                            title="Farm Simulation Map"
+                            allow="geolocation; fullscreen"
+                            loading="lazy"
+                        />
+                        {/* Fullscreen button overlay */}
+                        <button
+                            onClick={() => setIsMapFullscreen(true)}
+                            className="absolute top-3 right-3 z-10 h-8 w-8 rounded-full bg-slate-900/70 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white hover:bg-slate-800 hover:scale-110 transition-all shadow-lg"
+                            title="Fullscreen"
+                        >
+                            <Maximize2 className="h-4 w-4" />
+                        </button>
+
+                        {/* Fullscreen overlay */}
+                        {isMapFullscreen && (
+                            <div className="fixed inset-0 z-[300] flex flex-col bg-[#0a0f18]">
+                                <div className="flex items-center justify-between px-5 py-3 bg-[#0f172a] border-b border-slate-700/50 shrink-0">
+                                    <div className="flex items-center gap-2.5">
+                                        <div className="h-7 w-7 rounded-lg bg-emerald-600 flex items-center justify-center">
+                                            <Map className="h-4 w-4 text-white" />
+                                        </div>
+                                        <p className="font-bold text-white text-sm">Farm Simulation Map — Fullscreen</p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => setIsMapFullscreen(false)}
+                                            className="h-8 w-8 rounded-full border border-slate-600 bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300 hover:text-white transition-all"
+                                            title="Exit Fullscreen"
+                                        >
+                                            <Minimize2 className="h-4 w-4" />
+                                        </button>
+                                        <button
+                                            onClick={() => { setIsMapFullscreen(false); setIsMapView(false); }}
+                                            className="h-8 w-8 rounded-full border border-slate-600 bg-slate-800 hover:bg-red-900/60 hover:border-red-700 flex items-center justify-center text-slate-300 hover:text-red-400 transition-all"
+                                            title="Close Map"
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                                <iframe
+                                    src="https://dream9.netlify.app/map"
+                                    className="flex-1 w-full border-0"
+                                    title="Farm Simulation Map Fullscreen"
+                                    allow="geolocation; fullscreen"
+                                    loading="lazy"
+                                />
+                            </div>
+                        )}
+                    </>
+                ) : is3DView ? (
                     <div className="w-full h-full">
                         <Farm3DView blocks={farmBlocks} onBlockClick={(b) => toast.info(`Selected: ${b.blockName}`)} conflictingBlockIds={conflictingBlockIds} />
                     </div>

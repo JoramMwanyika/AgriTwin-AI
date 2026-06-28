@@ -17,8 +17,11 @@ import {
   ArrowUpRight,
   Save,
   Maximize2,
+  Minimize2,
   MoveHorizontal,
-  MoveVertical
+  MoveVertical,
+  Map,
+  X
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -216,6 +219,8 @@ export default function FarmTwinPage() {
 
   const [is3DView, setIs3DView] = useState(false);
   const [isEditingLayout, setIsEditingLayout] = useState(false);
+  const [isMapOpen, setIsMapOpen] = useState(false);
+  const [isMapFullscreen, setIsMapFullscreen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   
   const [editingBlock, setEditingBlock] = useState<FarmBlock | null>(null);
@@ -516,6 +521,17 @@ export default function FarmTwinPage() {
                 <strong>{is3DView ? '3D Render' : '2D Map'}</strong>
               </Button>
 
+              <Button
+                onClick={() => setIsMapOpen(!isMapOpen)}
+                variant="outline"
+                className={`transition-all duration-300 rounded-full px-6 h-12 bg-white backdrop-blur-md border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 ${
+                  isMapOpen ? 'ring-2 ring-emerald-500/50 bg-emerald-50 text-emerald-700 border-emerald-200' : ''
+                }`}
+              >
+                <Map className="h-4 w-4 mr-2" />
+                {isMapOpen ? 'Close Map' : 'View Map'}
+              </Button>
+
               {isEditingLayout ? (
                 <Button onClick={saveLayout} disabled={isSaving} className="rounded-full px-6 h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-600/20 border-0 hover:scale-105 transition-all animate-pulse">
                   <Save className="h-4 w-4 mr-2" />
@@ -678,6 +694,102 @@ export default function FarmTwinPage() {
                 </div>
               </DndContext>
             </div>
+          </div>
+        )}
+
+        {/* Inline Map Panel */}
+        {isMapOpen && !isMapFullscreen && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 16 }}
+            className="relative rounded-3xl border border-slate-200 shadow-2xl overflow-hidden bg-white"
+          >
+            {/* Map Panel Header */}
+            <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-slate-200">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-xl bg-emerald-600 flex items-center justify-center shadow-md">
+                  <Map className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="font-bold text-slate-800 text-sm">Farm Simulation Map</p>
+                  <p className="text-[11px] text-slate-500">Live terrain & crop coverage view</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="h-9 w-9 rounded-full border-slate-200 hover:bg-emerald-50 hover:border-emerald-300 text-slate-500 hover:text-emerald-700 transition-all"
+                  onClick={() => setIsMapFullscreen(true)}
+                  title="Fullscreen"
+                >
+                  <Maximize2 className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="h-9 w-9 rounded-full border-slate-200 hover:bg-red-50 hover:border-red-200 text-slate-500 hover:text-red-600 transition-all"
+                  onClick={() => setIsMapOpen(false)}
+                  title="Close"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            {/* Iframe */}
+            <div className="relative w-full" style={{ height: '520px' }}>
+              <iframe
+                src="https://dream9.netlify.app/map"
+                className="w-full h-full border-0"
+                title="Farm Simulation Map"
+                allow="geolocation; fullscreen"
+                loading="lazy"
+              />
+            </div>
+          </motion.div>
+        )}
+
+        {/* Fullscreen Map Overlay */}
+        {isMapFullscreen && (
+          <div className="fixed inset-0 z-[200] flex flex-col bg-[#0a0f18]">
+            {/* Fullscreen Header */}
+            <div className="flex items-center justify-between px-6 py-3 bg-[#0f172a] border-b border-slate-700/50 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-xl bg-emerald-600 flex items-center justify-center shadow-md">
+                  <Map className="h-4 w-4 text-white" />
+                </div>
+                <p className="font-bold text-white text-sm">Farm Simulation Map — Fullscreen</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="h-9 w-9 rounded-full border-slate-600 hover:bg-slate-700 text-slate-300 hover:text-white transition-all"
+                  onClick={() => setIsMapFullscreen(false)}
+                  title="Exit Fullscreen"
+                >
+                  <Minimize2 className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="h-9 w-9 rounded-full border-slate-600 hover:bg-red-900/50 hover:border-red-700 text-slate-300 hover:text-red-400 transition-all"
+                  onClick={() => { setIsMapFullscreen(false); setIsMapOpen(false); }}
+                  title="Close Map"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            {/* Fullscreen Iframe */}
+            <iframe
+              src="https://dream9.netlify.app/map"
+              className="flex-1 w-full border-0"
+              title="Farm Simulation Map Fullscreen"
+              allow="geolocation; fullscreen"
+              loading="lazy"
+            />
           </div>
         )}
 
