@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { Bell, CloudRain, Sun, Cloud, Mic } from "lucide-react";
 import { useChat } from "@/components/chat-provider";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { motion } from "framer-motion";
 import Script from "next/script";
 import { useSearchParams } from "next/navigation";
@@ -16,14 +16,8 @@ function getGreeting() {
   return "Good evening";
 }
 
-export function AppPageHeader({
-  subtitle = "Today's Farm Overview",
-}: {
-  subtitle?: string;
-}) {
-  const { data: session, status } = useSession();
-  const { toggleChat } = useChat();
-  const firstName = session?.user?.name?.split(" ")[0] || "Farmer";
+// ─── Inner component that uses useSearchParams safely inside Suspense ───────
+function StartCallListener({ status }: { status: string }) {
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -42,6 +36,19 @@ export function AppPageHeader({
       return () => clearInterval(interval);
     }
   }, [status, searchParams]);
+
+  return null;
+}
+
+// ─── Public export ────────────────────────────────────────────────────────────
+export function AppPageHeader({
+  subtitle = "Today's Farm Overview",
+}: {
+  subtitle?: string;
+}) {
+  const { data: session, status } = useSession();
+  const { toggleChat } = useChat();
+  const firstName = session?.user?.name?.split(" ")[0] || "Farmer";
 
   const handleVoiceAssistantClick = () => {
     const widget = document.querySelector("elevenlabs-convai");
@@ -90,6 +97,11 @@ export function AppPageHeader({
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      {/* Safely use useSearchParams inside Suspense — required by Next.js 16 */}
+      <Suspense fallback={null}>
+        <StartCallListener status={status} />
+      </Suspense>
+
       <div>
         <h1 className="text-2xl md:text-3xl font-bold text-slate-800 tracking-tight">
           {getGreeting()}, {firstName}{" "}
