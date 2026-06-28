@@ -16,6 +16,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import Image from "next/image"
 import ReactMarkdown from "react-markdown"
 import { motion, AnimatePresence } from "framer-motion"
+import { ElevenLabsConvaiWidget } from "@/components/elevenlabs-convai-widget"
 
 type Message = {
   id: number | string
@@ -548,19 +549,9 @@ export default function AdvisorPage() {
         </DropdownMenu>
 
         <div className="flex items-center gap-2">
-          <Button
-            variant={isVoiceMode ? "default" : "outline"}
-            size="sm"
-            className={`gap-2 transition-all rounded-full ${isVoiceMode
-              ? 'bg-red-500 hover:bg-red-600 text-white border-none animate-pulse'
-              : 'border-slate-600 text-[#22c55e] hover:bg-slate-700'
-              }`}
-            onClick={toggleVoiceMode}
-            disabled={isLoading}
-          >
-            {isVoiceMode ? <PhoneOff className="h-4 w-4" /> : <Phone className="h-4 w-4" />}
-            <span className="hidden sm:inline">{isVoiceMode ? 'End Call' : 'Voice Chat'}</span>
-          </Button>
+          <div className="rounded-full border border-slate-700 bg-slate-800/80 px-2 py-1">
+            <ElevenLabsConvaiWidget label={isVoiceMode ? "End Call" : "Voice Chat"} />
+          </div>
 
           <Button
             variant="ghost"

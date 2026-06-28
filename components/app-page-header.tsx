@@ -6,6 +6,7 @@ import { useChat } from "@/components/chat-provider";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { ElevenLabsConvaiWidget } from "@/components/elevenlabs-convai-widget";
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -66,30 +67,16 @@ export function AppPageHeader({
       </div>
 
       <div className="flex items-center gap-4 shrink-0 mt-2 sm:mt-0">
-        <motion.button
-          type="button"
-          onClick={toggleChat}
+        <motion.div
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           className="group relative inline-flex items-center overflow-hidden rounded-full p-[1.5px] shadow-md transition-shadow hover:shadow-[0_0_20px_rgba(16,185,129,0.25)] ring-1 ring-slate-200/50"
         >
           <span className="absolute inset-0 block h-full w-full animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#cbd5e1_0%,#10b981_50%,#cbd5e1_100%)] opacity-30 group-hover:opacity-100 transition-opacity duration-500" />
-          
-          <span className="relative flex h-full w-full items-center gap-2 justify-center rounded-full bg-white px-4 py-2 transition-colors group-hover:bg-emerald-50/90 backdrop-blur-sm shadow-inner">
-             <div className="relative flex items-center justify-center">
-                <Mic className="relative z-10 h-4 w-4 text-emerald-600 transition-transform group-hover:scale-110" />
-                <span className="absolute inset-0 z-0 h-full w-full animate-ping rounded-full bg-emerald-400 opacity-20" />
-             </div>
-             <span className="bg-gradient-to-r from-slate-700 to-slate-800 bg-clip-text text-sm font-extrabold text-transparent group-hover:from-emerald-700 group-hover:to-teal-800 transition-all font-sans tracking-tight">
-                Voice Assistant
-             </span>
-             <div className="flex items-end gap-[2px] ml-1 opacity-60 group-hover:opacity-100 transition-opacity duration-300 h-3">
-                <span className="h-1.5 w-[2px] animate-[pulse_0.7s_ease-in-out_infinite] bg-emerald-500 rounded-t-full" />
-                <span className="h-3 w-[2px] animate-[pulse_0.7s_ease-in-out_0.2s_infinite] bg-emerald-500 rounded-t-full" />
-                <span className="h-2 w-[2px] animate-[pulse_0.7s_ease-in-out_0.4s_infinite] bg-emerald-500 rounded-t-full" />
-             </div>
+          <span className="relative flex h-full w-full items-center justify-center rounded-full bg-white px-3 py-2 transition-colors group-hover:bg-emerald-50/90 backdrop-blur-sm shadow-inner">
+            <ElevenLabsConvaiWidget label="Voice Assistant" className="w-full" />
           </span>
-        </motion.button>
+        </motion.div>
 
         <Link
           href="/alerts"
