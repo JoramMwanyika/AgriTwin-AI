@@ -6,7 +6,6 @@ import { useChat } from "@/components/chat-provider";
 import Link from "next/link";
 import { useEffect, useState, Suspense } from "react";
 import { motion } from "framer-motion";
-import Script from "next/script";
 import { useSearchParams } from "next/navigation";
 
 function getGreeting() {
@@ -167,8 +166,9 @@ export function AppPageHeader({
       {status === "authenticated" && (
         <>
           {/* @ts-ignore */}
-          <elevenlabs-convai agent-id="agent_2201kw4r61tmf8mvppbqxdeeppjs"></elevenlabs-convai>
-          <Script src="https://unpkg.com/@elevenlabs/convai-widget-embed" strategy="lazyOnload" />
+          <elevenlabs-convai agent-id="agent_4501kw6x2xrjfz5s3qrcpvj3k65c"></elevenlabs-convai>
+          {/* @ts-ignore */}
+          <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
         </>
       )}
     </div>
