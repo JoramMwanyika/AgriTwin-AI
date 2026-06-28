@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Script from "next/script";
+import { useSearchParams } from "next/navigation";
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -23,6 +24,24 @@ export function AppPageHeader({
   const { data: session, status } = useSession();
   const { toggleChat } = useChat();
   const firstName = session?.user?.name?.split(" ")[0] || "Farmer";
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (status === "authenticated" && searchParams.get("startCall") === "true") {
+      const interval = setInterval(() => {
+        const widget = document.querySelector("elevenlabs-convai");
+        if (widget && widget.shadowRoot) {
+          const btn = widget.shadowRoot.querySelector("button");
+          if (btn) {
+            btn.click();
+            clearInterval(interval);
+            window.history.replaceState({}, "", window.location.pathname);
+          }
+        }
+      }, 300);
+      return () => clearInterval(interval);
+    }
+  }, [status, searchParams]);
 
   const handleVoiceAssistantClick = () => {
     const widget = document.querySelector("elevenlabs-convai");
@@ -38,6 +57,22 @@ export function AppPageHeader({
   };
 
   const [weather, setWeather] = useState<{ temp: number; name: string; condition: string; rainProb?: number } | null>(null);
+
+  // Hide ElevenLabs floating button inside its shadow DOM once loaded
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    const interval = setInterval(() => {
+      const widget = document.querySelector("elevenlabs-convai");
+      if (widget && widget.shadowRoot) {
+        const btn = widget.shadowRoot.querySelector("button");
+        if (btn) {
+          btn.style.display = "none";
+          clearInterval(interval);
+        }
+      }
+    }, 300);
+    return () => clearInterval(interval);
+  }, [status]);
 
   useEffect(() => {
     fetch('/api/weather')

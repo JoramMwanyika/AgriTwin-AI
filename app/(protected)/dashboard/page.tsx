@@ -78,6 +78,15 @@ const fadeUpItem = {
 export default function Dashboard() {
   const router = useRouter();
   const { toggleChat } = useChat();
+
+  const triggerVoiceWidget = () => {
+    const widget = document.querySelector("elevenlabs-convai");
+    if (widget && widget.shadowRoot) {
+      const btn = widget.shadowRoot.querySelector("button");
+      if (btn) { btn.click(); return; }
+    }
+    toggleChat();
+  };
   
   const [blockRecs, setBlockRecs] = useState<BlockDailyRecommendation[]>([]);
   const [summary, setSummary] = useState<RecommendationsSummary | null>(null);
@@ -142,6 +151,13 @@ export default function Dashboard() {
         <AppPageHeader 
             subtitle="Real-time insights and automated analytics for your entire operation." 
         />
+
+        {/* MAP ROW (Shown First) */}
+        <div className="flex flex-col min-h-[450px]">
+           <div className="bg-white p-2 rounded-[32px] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-full w-full overflow-hidden">
+              <FarmMapWidget />
+           </div>
+        </div>
 
         {/* TOP METRICS */}
         <motion.section 
@@ -209,7 +225,7 @@ export default function Dashboard() {
                     <p className="font-extrabold text-slate-900 text-lg line-clamp-1 tracking-tight">{topAlert.blockName}</p>
                     <p className="text-xs text-slate-600 mt-1 font-medium line-clamp-2 leading-relaxed">{topAlert.message}</p>
                     <Link href="/farm" className="inline-flex items-center gap-1.5 mt-4 text-[11px] font-black uppercase tracking-wider text-red-600 hover:text-red-800 hover:gap-2.5 transition-all">
-                      Resolve Issue <ArrowRight className="h-3.5 w-3.5" />
+                       Resolve Issue <ArrowRight className="h-3.5 w-3.5" />
                     </Link>
                   </>
                 ) : (
@@ -259,14 +275,8 @@ export default function Dashboard() {
           </motion.div>
         </motion.section>
 
-        {/* MIDDLE ROW: MAP AND RECOMMENDATIONS */}
+        {/* AI Recommendations */}
         <section className="flex flex-col gap-6">
-          <div className="flex flex-col h-full min-h-[450px]">
-             <div className="bg-white p-2 rounded-[32px] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-full w-full overflow-hidden">
-                <FarmMapWidget />
-             </div>
-          </div>
-
           <div className="bg-white rounded-[32px] border border-slate-100 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col relative overflow-hidden">
             <div className="absolute top-0 right-0 w-48 h-48 bg-teal-500/5 rounded-full blur-3xl pointer-events-none" />
              <div className="absolute bottom-0 left-0 w-48 h-48 bg-teal-500/5 rounded-full blur-3xl pointer-events-none" />
@@ -466,7 +476,7 @@ export default function Dashboard() {
           <motion.button
             variants={fadeUpItem}
             type="button"
-            onClick={toggleChat}
+          onClick={triggerVoiceWidget}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className="group relative overflow-hidden bg-gradient-to-br from-teal-900 via-teal-950 to-slate-900 rounded-[32px] p-7 shadow-[0_12px_40px_rgb(13,148,136,0.3)] flex flex-col items-center justify-center text-center min-h-[220px] transition-all border border-teal-800/50 hover:border-teal-400/50 focus:outline-none"

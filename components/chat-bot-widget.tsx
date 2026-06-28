@@ -17,6 +17,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useChat } from "@/components/chat-provider";
 import { CHAT_LANGUAGES, getChatGreeting, getUIString, normalizeLanguageCode } from "@/lib/languages";
+import { usePathname } from "next/navigation";
 
 interface Message {
     id: string;
@@ -32,6 +33,12 @@ export function ChatBotWidget() {
     const [inputValue, setInputValue] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const [mounted, setMounted] = useState(false);
+    const pathname = usePathname();
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     useEffect(() => {
         setMessages([
@@ -49,7 +56,9 @@ export function ChatBotWidget() {
         }
     }, [messages, isOpen]);
 
-    if (status !== "authenticated" || !session?.user) return null;
+    const isPublicPage = ["/", "/login", "/register", "/onboarding"].includes(pathname);
+
+    if (!mounted || isPublicPage || status !== "authenticated" || !session?.user) return null;
 
     const handleSend = async () => {
         if (!inputValue.trim() || isLoading) return;
